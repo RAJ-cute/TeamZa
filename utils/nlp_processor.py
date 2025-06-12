@@ -29,9 +29,32 @@ class NLPProcessor:
         text_lower = text.lower()
         found_skills = []
         
+        # Add word boundary checking for better accuracy
+        import re
+        
         for skill in self.all_skills:
-            if skill.lower() in text_lower:
+            # Create pattern with word boundaries to avoid partial matches
+            pattern = r'\b' + re.escape(skill.lower()) + r'\b'
+            if re.search(pattern, text_lower):
                 found_skills.append(skill)
+        
+        # Also look for common skill variations and abbreviations
+        skill_variations = {
+            'javascript': ['js', 'node.js', 'nodejs'],
+            'python': ['py'],
+            'artificial intelligence': ['ai', 'machine learning', 'ml'],
+            'user interface': ['ui'],
+            'user experience': ['ux'],
+            'application programming interface': ['api'],
+            'database': ['db'],
+            'software development': ['dev', 'development']
+        }
+        
+        for main_skill, variations in skill_variations.items():
+            for variation in variations:
+                pattern = r'\b' + re.escape(variation) + r'\b'
+                if re.search(pattern, text_lower) and main_skill not in [s.lower() for s in found_skills]:
+                    found_skills.append(main_skill)
         
         # Remove duplicates and return
         return list(set(found_skills))
@@ -44,25 +67,43 @@ class NLPProcessor:
         if not job_skills:
             return 0.0
         
-        # Calculate Jaccard similarity
-        intersection = len(resume_skills.intersection(job_skills))
-        union = len(resume_skills.union(job_skills))
-        
-        if union == 0:
-            return 0.0
-        
-        jaccard_score = intersection / union
+        # Calculate skill match score with weights
+        intersection = resume_skills.intersection(job_skills)
+        skill_match_score = len(intersection) / len(job_skills) if job_skills else 0
         
         # Calculate keyword frequency score
         resume_words = self._preprocess_text(resume_text)
         job_words = self._preprocess_text(job_description)
-        
         keyword_score = self._calculate_keyword_similarity(resume_words, job_words)
         
-        # Combine scores (weighted average)
-        final_score = (jaccard_score * 0.6 + keyword_score * 0.4) * 100
+        # Experience bonus
+        experience_bonus = 0
+        resume_lower = resume_text.lower()
+        import re
+        years_match = re.findall(r'(\d+)\+?\s*years?\s*(?:of\s*)?(?:experience|exp)', resume_lower)
+        if years_match:
+            max_years = max([int(y) for y in years_match])
+            if max_years >= 5:
+                experience_bonus = 0.1
+            elif max_years >= 2:
+                experience_bonus = 0.05
         
-        return round(min(final_score, 100), 2)
+        # Education bonus
+        education_bonus = 0
+        if any(word in resume_lower for word in ['bachelor', 'master', 'phd', 'degree', 'university', 'college']):
+            education_bonus = 0.05
+        
+        # Combine scores with weights
+        base_score = (skill_match_score * 0.5 + keyword_score * 0.4) * 100
+        final_score = base_score + (experience_bonus * 100) + (education_bonus * 100)
+        
+        # Add some randomization to avoid identical scores
+        import random
+        random.seed(hash(resume_text) % (2**32))  # Deterministic but varies per resume
+        variation = random.uniform(-2, 2)
+        final_score += variation
+        
+        return round(max(0, min(final_score, 100)), 2)
     
     def _preprocess_text(self, text):
         """Preprocess text for analysis"""
@@ -104,14 +145,70 @@ class NLPProcessor:
     
     def generate_reasoning(self, resume_text, skills, score):
         """Generate reasoning for the match score"""
-        if score >= 80:
-            return f"Excellent match! Found {len(skills)} relevant skills including {', '.join(skills[:3])}. Strong alignment with job requirements."
-        elif score >= 60:
-            return f"Good match. Identified {len(skills)} relevant skills. Some additional training may be beneficial."
-        elif score >= 40:
-            return f"Moderate match. Found {len(skills)} relevant skills but may lack some key requirements."
+        resume_lower = resume_text.lower()
+        
+        # Analyze experience level
+        experience_indicators = []
+        if any(word in resume_lower for word in ['senior', 'lead', 'principal', 'architect']):
+            experience_indicators.append("senior-level experience")
+        elif any(word in resume_lower for word in ['junior', 'entry', 'graduate', 'intern']):
+            experience_indicators.append("entry-level background")
         else:
-            return f"Limited match. Only {len(skills)} relevant skills identified. Significant skill gaps present."
+            experience_indicators.append("mid-level experience")
+        
+        # Find years of experience
+        import re
+        years_match = re.findall(r'(\d+)\+?\s*years?\s*(?:of\s*)?(?:experience|exp)', resume_lower)
+        if years_match:
+            years = max([int(y) for y in years_match])
+            experience_indicators.append(f"{years} years of experience")
+        
+        # Categorize skills
+        skill_categories = {
+            'technical': ['python', 'java', 'javascript', 'sql', 'aws', 'docker', 'react', 'node.js'],
+            'soft': ['leadership', 'communication', 'teamwork', 'problem solving'],
+            'industry': ['agile', 'scrum', 'project management']
+        }
+        
+        found_categories = []
+        for category, category_skills in skill_categories.items():
+            if any(skill.lower() in [s.lower() for s in skills] for skill in category_skills):
+                found_categories.append(category)
+        
+        # Generate specific reasoning based on analysis
+        reasoning_parts = []
+        
+        if score >= 80:
+            reasoning_parts.append(f"Excellent candidate with {', '.join(experience_indicators)}.")
+            if skills:
+                reasoning_parts.append(f"Strong technical fit with {len(skills)} relevant skills: {', '.join(skills[:4])}{'...' if len(skills) > 4 else ''}.")
+            if 'leadership' in [s.lower() for s in skills]:
+                reasoning_parts.append("Demonstrates leadership capabilities.")
+        elif score >= 60:
+            reasoning_parts.append(f"Good candidate with {', '.join(experience_indicators)}.")
+            if skills:
+                reasoning_parts.append(f"Has {len(skills)} relevant skills including {', '.join(skills[:3])}.")
+            reasoning_parts.append("May need some upskilling in specific areas.")
+        elif score >= 40:
+            reasoning_parts.append(f"Potential candidate with {', '.join(experience_indicators)}.")
+            if skills:
+                reasoning_parts.append(f"Limited skill match with {len(skills)} relevant skills: {', '.join(skills[:2])}.")
+            reasoning_parts.append("Would require significant training and development.")
+        else:
+            reasoning_parts.append("Poor fit for this role.")
+            if skills:
+                reasoning_parts.append(f"Only {len(skills)} relevant skills found.")
+            reasoning_parts.append("Lacks most required qualifications.")
+        
+        # Add category-specific insights
+        if 'technical' in found_categories and 'soft' in found_categories:
+            reasoning_parts.append("Good balance of technical and soft skills.")
+        elif 'technical' in found_categories:
+            reasoning_parts.append("Strong technical background but may need soft skill development.")
+        elif 'soft' in found_categories:
+            reasoning_parts.append("Good soft skills but limited technical qualifications.")
+        
+        return " ".join(reasoning_parts)
     
     def analyze_sentiment(self, text):
         """Basic sentiment analysis using keyword matching"""
