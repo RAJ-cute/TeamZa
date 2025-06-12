@@ -1,0 +1,246 @@
+import pandas as pd
+import ipywidgets as widgets
+from IPython.display import display, HTML
+
+# Hardcoded employee data based on the Excel file
+employee_data = [
+    {
+        "Name": "Anil Nair", "Gender": "Male", "Region": "South", "Age": 37,
+        "Experience": 4, "Job Role": "Product Manager", "Manager Rating": 4.4,
+        "Last Hike Date": "2023-10-21", "Promotion Date": "2024-07-14",
+        "Skill Gaps": "User Research"
+    },
+    {
+        "Name": "Priya Sen", "Gender": "Female", "Region": "East", "Age": 30,
+        "Experience": 6, "Job Role": "Product Manager", "Manager Rating": 3.19,
+        "Last Hike Date": "2022-09-06", "Promotion Date": "2023-06-01",
+        "Skill Gaps": "Agile, Tech Understanding"
+    },
+    {
+        "Name": "Sourav Das", "Gender": "Female", "Region": "East", "Age": 47,
+        "Experience": 15, "Job Role": "Sales Executive", "Manager Rating": 4.66,
+        "Last Hike Date": "2022-07-01", "Promotion Date": "2023-06-04",
+        "Skill Gaps": "Negotiation, CRM"
+    },
+    {
+        "Name": "Abhishek Dutta", "Gender": "Male", "Region": "East", "Age": 30,
+        "Experience": 2, "Job Role": "Sales Executive", "Manager Rating": 4.97,
+        "Last Hike Date": "2024-01-08", "Promotion Date": "2024-09-03",
+        "Skill Gaps": "CRM, Presentation Skills"
+    },
+    {
+        "Name": "Divya Bhalla", "Gender": "Female", "Region": "North", "Age": 32,
+        "Experience": 8, "Job Role": "HR Manager", "Manager Rating": 3.42,
+        "Last Hike Date": "2023-01-11", "Promotion Date": "2023-09-16",
+        "Skill Gaps": "Employee Engagement, HR Analytics"
+    },
+    {
+        "Name": "Rohit Thakur", "Gender": "Male", "Region": "North", "Age": 44,
+        "Experience": 6, "Job Role": "HR Manager", "Manager Rating": 3.54,
+        "Last Hike Date": "2022-12-19", "Promotion Date": "2023-11-27",
+        "Skill Gaps": "Conflict Resolution, Talent Management"
+    },
+    {
+        "Name": "Karthik Raj", "Gender": "Male", "Region": "South", "Age": 50,
+        "Experience": 25, "Job Role": "Cybersecurity Specialist", "Manager Rating": 4.61,
+        "Last Hike Date": "2022-12-02", "Promotion Date": "2023-09-10",
+        "Skill Gaps": "Ethical Hacking, SIEM"
+    },
+    {
+        "Name": "Sourav Das", "Gender": "Female", "Region": "East", "Age": 30,
+        "Experience": 6, "Job Role": "Cybersecurity Specialist", "Manager Rating": 4.77,
+        "Last Hike Date": "2022-09-28", "Promotion Date": "2023-09-07",
+        "Skill Gaps": "Ethical Hacking, Network Security"
+    },
+    {
+        "Name": "Rahul Mehta", "Gender": "Female", "Region": "West", "Age": 32,
+        "Experience": 3, "Job Role": "Data Analyst", "Manager Rating": 4.17,
+        "Last Hike Date": "2024-01-05", "Promotion Date": "2024-11-29",
+        "Skill Gaps": "SQL, Excel"
+    },
+    {
+        "Name": "Sneha Desai", "Gender": "Female", "Region": "West", "Age": 31,
+        "Experience": 3, "Job Role": "Data Analyst", "Manager Rating": 4.58,
+        "Last Hike Date": "2022-08-30", "Promotion Date": "2023-06-14",
+        "Skill Gaps": "Data Visualization, Python"
+    }
+]
+
+# Convert to DataFrame
+df = pd.DataFrame(employee_data)
+
+# Course recommendations for each job role and skill gap
+course_recommendations = {
+    "Product Manager": {
+        "User Research": [
+            {"title": "User Research and Design", "platform": "Coursera", "url": "https://www.coursera.org/learn/user-research"},
+            {"title": "UX Research at Scale: Surveys, Analytics, Online Testing", "platform": "Udemy", "url": "https://www.udemy.com/course/ux-research-at-scale"},
+            {"title": "User Experience Research and Design Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/user-experience-research-and-design"},
+            {"title": "User Research for Product Managers", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/user-research-for-product-managers"}
+        ],
+        "Agile": [
+            {"title": "Agile Development Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/agile-development"},
+            {"title": "Agile Crash Course: Agile Project Management", "platform": "Udemy", "url": "https://www.udemy.com/course/agile-crash-course"},
+            {"title": "Agile Meets Design Thinking", "platform": "Coursera", "url": "https://www.coursera.org/learn/agile-meets-design-thinking"},
+            {"title": "Agile Product Management", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/agile-product-management"}
+        ],
+        "Tech Understanding": [
+            {"title": "Technology for Product Managers", "platform": "Udemy", "url": "https://www.udemy.com/course/technology-for-product-managers"},
+            {"title": "Software Product Management Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/product-management"},
+            {"title": "Technical Product Management", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/technical-product-management"},
+            {"title": "Product Management for Technical Professionals", "platform": "Udemy", "url": "https://www.udemy.com/course/product-management-for-technical-professionals"}
+        ]
+    },
+    "Sales Executive": {
+        "CRM": [
+            {"title": "CRM Fundamentals", "platform": "Udemy", "url": "https://www.udemy.com/course/crm-fundamentals"},
+            {"title": "Salesforce Administrator Certification Training", "platform": "Coursera", "url": "https://www.coursera.org/learn/salesforce-administrator"},
+            {"title": "HubSpot CRM Implementation", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/hubspot-crm-implementation"},
+            {"title": "CRM: Customer Relationship Management", "platform": "Udemy", "url": "https://www.udemy.com/course/crm-customer-relationship-management"}
+        ],
+        "Presentation Skills": [
+            {"title": "Presentation Skills: Speechwriting and Storytelling", "platform": "Udemy", "url": "https://www.udemy.com/course/presentation-skills-speechwriting-and-storytelling"},
+            {"title": "Successful Presentation", "platform": "Coursera", "url": "https://www.coursera.org/learn/successful-presentation"},
+            {"title": "Presentation Skills: Designing Presentation Slides", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/presentation-skills-designing-presentation-slides"},
+            {"title": "The Complete Presentation and Public Speaking Course", "platform": "Udemy", "url": "https://www.udemy.com/course/publicspeaking"}
+        ],
+        "Negotiation": [
+            {"title": "Successful Negotiation: Essential Strategies and Skills", "platform": "Coursera", "url": "https://www.coursera.org/learn/negotiation-skills"},
+            {"title": "The Complete Negotiation Skills Masterclass", "platform": "Udemy", "url": "https://www.udemy.com/course/negotiation-skills-masterclass"},
+            {"title": "Negotiation Skills", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/negotiation-skills"},
+            {"title": "Sales Negotiation Strategies", "platform": "Udemy", "url": "https://www.udemy.com/course/sales-negotiation-strategies"}
+        ]
+    },
+    "HR Manager": {
+        "Employee Engagement": [
+            {"title": "Employee Engagement and Retention", "platform": "Udemy", "url": "https://www.udemy.com/course/employee-engagement-and-retention"},
+            {"title": "HR Analytics: Employee Engagement", "platform": "Coursera", "url": "https://www.coursera.org/learn/hr-analytics-employee-engagement"},
+            {"title": "Employee Engagement", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/employee-engagement"},
+            {"title": "The Complete Employee Engagement Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-employee-engagement-course"}
+        ],
+        "HR Analytics": [
+            {"title": "HR Analytics Using MS Excel for Human Resource Management", "platform": "Udemy", "url": "https://www.udemy.com/course/hr-analytics-using-ms-excel-for-human-resource-management"},
+            {"title": "People Analytics", "platform": "Coursera", "url": "https://www.coursera.org/learn/people-analytics"},
+            {"title": "HR Analytics: Building a Data-Driven HR Department", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/hr-analytics-building-a-data-driven-hr-department"},
+            {"title": "The Complete HR Analytics Course in Excel & R", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-hr-analytics-course-in-excel-r"}
+        ],
+        "Conflict Resolution": [
+            {"title": "Conflict Resolution Skills", "platform": "Udemy", "url": "https://www.udemy.com/course/conflict-resolution-skills"},
+            {"title": "Conflict Management Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/conflict-management"},
+            {"title": "Conflict Resolution Foundations", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/conflict-resolution-foundations"},
+            {"title": "Workplace Conflict Resolution: A Practical Guide", "platform": "Udemy", "url": "https://www.udemy.com/course/workplace-conflict-resolution"}
+        ],
+        "Talent Management": [
+            {"title": "Talent Management", "platform": "Coursera", "url": "https://www.coursera.org/learn/talent-management"},
+            {"title": "Strategic Talent Management", "platform": "Udemy", "url": "https://www.udemy.com/course/strategic-talent-management"},
+            {"title": "Talent Management", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/talent-management"},
+            {"title": "The Complete Talent Management Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-talent-management-course"}
+        ]
+    },
+    "Cybersecurity Specialist": {
+        "Ethical Hacking": [
+            {"title": "Ethical Hacking for Beginners", "platform": "Udemy", "url": "https://www.udemy.com/course/ethical-hacking-for-beginners"},
+            {"title": "Introduction to Cyber Security Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/intro-cyber-security"},
+            {"title": "Ethical Hacking: Penetration Testing", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/ethical-hacking-penetration-testing"},
+            {"title": "The Complete Ethical Hacking Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-ethical-hacking-course"}
+        ],
+        "SIEM": [
+            {"title": "SIEM for Beginners", "platform": "Udemy", "url": "https://www.udemy.com/course/siem-for-beginners"},
+            {"title": "Splunk Beginner to Architect", "platform": "Udemy", "url": "https://www.udemy.com/course/splunk-beginner-to-architect"},
+            {"title": "Security Information and Event Management (SIEM) Foundations", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/security-information-and-event-management-siem-foundations"},
+            {"title": "The Complete Splunk Beginner Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-splunk-beginner-course"}
+        ],
+        "Network Security": [
+            {"title": "Network Security Fundamentals", "platform": "Udemy", "url": "https://www.udemy.com/course/network-security-fundamentals"},
+            {"title": "Introduction to Cybersecurity Tools & Cyber Attacks", "platform": "Coursera", "url": "https://www.coursera.org/learn/introduction-cybersecurity-cyber-attacks"},
+            {"title": "Network Security", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/network-security"},
+            {"title": "The Complete Cyber Security Course: Network Security", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-internet-security-privacy-course-volume-1"}
+        ]
+    },
+    "Data Analyst": {
+        "SQL": [
+            {"title": "SQL for Data Science", "platform": "Coursera", "url": "https://www.coursera.org/learn/sql-for-data-science"},
+            {"title": "The Complete SQL Bootcamp", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-sql-bootcamp"},
+            {"title": "SQL Essential Training", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/sql-essential-training"},
+            {"title": "Advanced SQL: MySQL Data Analysis & Business Intelligence", "platform": "Udemy", "url": "https://www.udemy.com/course/advanced-sql-mysql-data-analysis-business-intelligence"}
+        ],
+        "Excel": [
+            {"title": "Excel Skills for Business Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/excel"},
+            {"title": "Microsoft Excel - Excel from Beginner to Advanced", "platform": "Udemy", "url": "https://www.udemy.com/course/microsoft-excel-2013-from-beginner-to-advanced-and-beyond"},
+            {"title": "Excel Essential Training (Office 365/Microsoft 365)", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/excel-essential-training-office-365-microsoft-365"},
+            {"title": "Microsoft Excel - Data Visualization, Excel Charts & Graphs", "platform": "Udemy", "url": "https://www.udemy.com/course/microsoft-excel-data-visualization-excel-charts-and-graphs"}
+        ],
+        "Data Visualization": [
+            {"title": "Data Visualization with Tableau Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/data-visualization"},
+            {"title": "Data Visualization in Python Masterclass", "platform": "Udemy", "url": "https://www.udemy.com/course/data-visualization-in-python"},
+            {"title": "Learning Data Visualization", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/learning-data-visualization"},
+            {"title": "The Complete Data Visualization Course with Python, R, Tableau", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-data-visualization-course"}
+        ],
+        "Python": [
+            {"title": "Python for Data Science and AI", "platform": "Coursera", "url": "https://www.coursera.org/learn/python-for-applied-data-science-ai"},
+            {"title": "Python for Data Science and Machine Learning Bootcamp", "platform": "Udemy", "url": "https://www.udemy.com/course/python-for-data-science-and-machine-learning-bootcamp"},
+            {"title": "Python for Data Analysis", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/python-for-data-analysis"},
+            {"title": "The Complete Python Course for Data Science and ML", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-python-course-for-data-science-and-ml"}
+        ]
+    }
+}
+
+# Create dropdown for employee selection
+employee_names = df['Name'].unique()
+employee_dropdown = widgets.Dropdown(
+    options=employee_names,
+    description='Select Employee:',
+    disabled=False,
+)
+
+# Output widget to display results
+output = widgets.Output()
+
+def on_employee_change(change):
+    with output:
+        output.clear_output()
+        selected_employee = change['new']
+        employee_info = df[df['Name'] == selected_employee].iloc[0]
+        
+        # Display basic info
+        display(HTML(f"<h3>Employee Information</h3>"))
+        display(HTML(f"<p><strong>Name:</strong> {employee_info['Name']}</p>"))
+        display(HTML(f"<p><strong>Job Role:</strong> {employee_info['Job Role']}</p>"))
+        display(HTML(f"<p><strong>Manager Rating:</strong> {employee_info['Manager Rating']}</p>"))
+        
+        # Display skill gaps
+        skill_gaps = employee_info['Skill Gaps']
+        if pd.isna(skill_gaps) or skill_gaps.strip() == "":
+            skill_gaps = "No specific skill gaps identified"
+        display(HTML(f"<h3>Identified Skill Gaps</h3>"))
+        display(HTML(f"<p>{skill_gaps}</p>"))
+        
+        # Display course recommendations
+        display(HTML(f"<h3>Upskilling Recommendations</h3>"))
+        job_role = employee_info['Job Role']
+        skill_gap_list = [s.strip() for s in str(skill_gaps).split(',') if s.strip()]
+        
+        if job_role in course_recommendations:
+            for skill in skill_gap_list:
+                if skill in course_recommendations[job_role]:
+                    display(HTML(f"<h4>Courses for {skill}:</h4>"))
+                    for course in course_recommendations[job_role][skill]:
+                        display(HTML(f"<p><a href='{course['url']}' target='_blank'>{course['title']}</a> ({course['platform']})</p>"))
+                else:
+                    display(HTML(f"<p>No specific courses found for '{skill}'. Here are general courses for {job_role}:</p>"))
+                    # Display first 4 general courses for the job role
+                    first_skill = next(iter(course_recommendations[job_role]))
+                    for course in course_recommendations[job_role][first_skill][:4]:
+                        display(HTML(f"<p><a href='{course['url']}' target='_blank'>{course['title']}</a> ({course['platform']})</p>"))
+        else:
+            display(HTML(f"<p>No course recommendations available for {job_role} role.</p>"))
+
+# Attach the change handler
+employee_dropdown.observe(on_employee_change, names='value')
+
+# Display the widgets
+display(employee_dropdown)
+display(output)
+
+# Trigger initial display
+on_employee_change({'new': employee_names[0]})
