@@ -28,6 +28,16 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # Initialize the app with the extension
 db.init_app(app)
 
+def from_json(value):
+    """Custom Jinja2 filter to parse JSON strings"""
+    try:
+        import json
+        return json.loads(value) if value else []
+    except:
+        return []
+
+app.jinja_env.filters['from_json'] = from_json
+
 with app.app_context():
     # Import models to ensure tables are created
     import models  # noqa: F401

@@ -11,6 +11,14 @@ class Employee(db.Model):
     hire_date = db.Column(db.Date, nullable=False)
     performance_score = db.Column(db.Float, default=0.0)
     skills = db.Column(Text)  # JSON string of skills
+    gender = db.Column(db.String(20))
+    region = db.Column(db.String(50))
+    age = db.Column(db.Integer)
+    experience_years = db.Column(db.Integer)
+    manager_rating = db.Column(db.Float)
+    last_hike_date = db.Column(db.String(20))
+    last_promotion_date = db.Column(db.String(20))
+    skill_gaps = db.Column(db.String(500))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Resume(db.Model):

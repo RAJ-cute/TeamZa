@@ -4,6 +4,7 @@ from models import Employee, Resume, LearningProgress, WellnessCheck, Performanc
 from utils.nlp_processor import NLPProcessor
 from utils.hr_analytics import HRAnalytics
 from data.mock_data import MockDataGenerator
+from data.real_data_loader import RealDataLoader
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -12,6 +13,7 @@ from datetime import datetime
 nlp_processor = NLPProcessor()
 hr_analytics = HRAnalytics()
 mock_data = MockDataGenerator()
+real_data_loader = RealDataLoader()
 
 @app.route('/')
 def index():
@@ -334,5 +336,65 @@ def initialize_data():
     except Exception as e:
         flash(f'Error initializing data: {str(e)}', 'error')
         db.session.rollback()
+    
+    return redirect(url_for('index'))
+
+@app.route('/initialize-real-data')
+def initialize_real_data():
+    """Initialize database with real employee data from uploaded files"""
+    try:
+        # Clear existing data
+        Resume.query.delete()
+        PerformanceReview.query.delete()
+        LearningProgress.query.delete()
+        WellnessCheck.query.delete()
+        Employee.query.delete()
+        db.session.commit()
+        
+        # Extract ZIP contents
+        extracted_files = real_data_loader.extract_zip_contents()
+        
+        # Load employee metadata
+        employees_data = real_data_loader.load_employee_metadata()
+        
+        # Add employees to database
+        for emp_data in employees_data:
+            employee = Employee(**emp_data)
+            db.session.add(employee)
+        
+        db.session.commit()
+        
+        # Load resumes
+        resumes_data = real_data_loader.load_resumes(extracted_files)
+        for resume_data in resumes_data:
+            resume = Resume(**resume_data)
+            db.session.add(resume)
+        
+        # Generate performance reviews based on manager ratings
+        employees = Employee.query.all()
+        for employee in employees:
+            review_data = {
+                'employee_id': employee.id,
+                'review_period': 'Q4 2023',
+                'feedback': f"Performance review for {employee.name}. Manager rating: {getattr(employee, 'manager_rating', 7.0)}/10. Areas for improvement: {getattr(employee, 'skill_gaps', 'General development')}",
+                'overall_rating': getattr(employee, 'manager_rating', 7.0),
+                'sentiment_score': 0.0,
+                'created_at': datetime.now()
+            }
+            review = PerformanceReview(**review_data)
+            db.session.add(review)
+        
+        db.session.commit()
+        
+        # Cleanup temporary files
+        real_data_loader.cleanup_temp_files()
+        
+        flash(f'Real employee data initialized successfully! Loaded {len(employees_data)} employees and {len(resumes_data)} resumes.', 'success')
+        
+    except Exception as e:
+        flash(f'Error initializing real data: {str(e)}', 'error')
+        db.session.rollback()
+        import traceback
+        traceback.print_exc()
     
     return redirect(url_for('index'))
