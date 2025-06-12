@@ -15,17 +15,85 @@ mock_data = MockDataGenerator()
 
 @app.route('/')
 def index():
-    """Main dashboard showing overview of all HR modules"""
-    # Get basic stats for dashboard
+    """HR Management Dashboard showing overview of all employee data"""
+    # Get comprehensive HR stats for dashboard
     total_employees = Employee.query.count()
     total_resumes = Resume.query.count()
     active_learning = LearningProgress.query.filter_by(completed=False).count()
     recent_wellness = WellnessCheck.query.order_by(WellnessCheck.check_date.desc()).limit(5).all()
     
+    # Department distribution
+    dept_stats = db.session.query(Employee.department, db.func.count(Employee.id)).group_by(Employee.department).all()
+    
+    # Recent performance reviews
+    recent_reviews = PerformanceReview.query.order_by(PerformanceReview.created_at.desc()).limit(5).all()
+    
+    # High performers
+    top_performers = Employee.query.filter(Employee.performance_score >= 8.0).order_by(Employee.performance_score.desc()).limit(5).all()
+    
     return render_template('index.html', 
                          total_employees=total_employees,
                          total_resumes=total_resumes,
                          active_learning=active_learning,
+                         recent_wellness=recent_wellness,
+                         dept_stats=dept_stats,
+                         recent_reviews=recent_reviews,
+                         top_performers=top_performers)
+
+@app.route('/employee-management')
+def employee_management():
+    """Employee Management - View, search, and manage all employees"""
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '')
+    department = request.args.get('department', '')
+    
+    query = Employee.query
+    
+    if search:
+        query = query.filter(
+            db.or_(
+                Employee.name.contains(search),
+                Employee.email.contains(search),
+                Employee.position.contains(search)
+            )
+        )
+    
+    if department:
+        query = query.filter(Employee.department == department)
+    
+    employees = query.order_by(Employee.name).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    departments = db.session.query(Employee.department).distinct().all()
+    departments = [dept[0] for dept in departments]
+    
+    return render_template('employee_management.html',
+                         employees=employees,
+                         departments=departments,
+                         search=search,
+                         selected_department=department)
+
+@app.route('/employee/<int:employee_id>')
+def employee_profile(employee_id):
+    """Individual employee profile with complete HR data"""
+    employee = Employee.query.get_or_404(employee_id)
+    
+    # Get all related data for this employee
+    performance_reviews = PerformanceReview.query.filter_by(employee_id=employee_id).order_by(PerformanceReview.created_at.desc()).all()
+    learning_progress = LearningProgress.query.filter_by(employee_id=employee_id).all()
+    wellness_checks = WellnessCheck.query.filter_by(employee_id=employee_id).order_by(WellnessCheck.check_date.desc()).all()
+    
+    # Calculate additional metrics
+    leadership_score = hr_analytics.calculate_leadership_potential(employee)
+    recent_wellness = wellness_checks[0] if wellness_checks else None
+    
+    return render_template('employee_profile.html',
+                         employee=employee,
+                         performance_reviews=performance_reviews,
+                         learning_progress=learning_progress,
+                         wellness_checks=wellness_checks,
+                         leadership_score=leadership_score,
                          recent_wellness=recent_wellness)
 
 @app.route('/resume-screening', methods=['GET', 'POST'])

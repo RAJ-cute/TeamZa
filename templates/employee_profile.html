@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} - Employee Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6">
+                    <i class="fas fa-user me-3"></i>{{ employee.name }}
+                </h1>
+                <p class="lead text-muted">{{ employee.position }} - {{ employee.department }}</p>
+            </div>
+            <a href="{{ url_for('employee_management') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Employee List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Overview Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-star fa-2x mb-2"></i>
+                <h4>{{ employee.performance_score }}/10</h4>
+                <p class="mb-0">Performance Score</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-crown fa-2x mb-2"></i>
+                <h4>{{ "%.1f"|format(leadership_score) }}/10</h4>
+                <p class="mb-0">Leadership Potential</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar fa-2x mb-2"></i>
+                <h4>{{ (employee.hire_date|string)[:4] }}</h4>
+                <p class="mb-0">Hire Year</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card {% if recent_wellness and recent_wellness.overall_wellness == 'green' %}bg-success{% elif recent_wellness and recent_wellness.overall_wellness == 'yellow' %}bg-warning{% else %}bg-danger{% endif %} text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-heart fa-2x mb-2"></i>
+                <h4>{{ recent_wellness.overall_wellness.title() if recent_wellness else 'N/A' }}</h4>
+                <p class="mb-0">Wellness Status</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Details -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Employee Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ employee.email }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Department:</strong></td>
+                        <td><span class="badge bg-info">{{ employee.department }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Position:</strong></td>
+                        <td>{{ employee.position }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hire Date:</strong></td>
+                        <td>{{ employee.hire_date.strftime('%B %d, %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Skills:</strong></td>
+                        <td>
+                            {% if employee.skills %}
+                                {% set skills_list = employee.skills|from_json %}
+                                {% for skill in skills_list %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ skill }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No skills listed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Performance Reviews -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-clipboard-check me-2"></i>Performance Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% if performance_reviews %}
+                    {% for review in performance_reviews[:3] %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ review.review_period }}</h6>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge {% if review.overall_rating >= 8.0 %}bg-success{% elif review.overall_rating >= 6.5 %}bg-warning{% else %}bg-danger{% endif %} me-2">
+                                        {{ review.overall_rating }}/10
+                                    </span>
+                                    <small class="text-muted">{{ review.created_at.strftime('%b %d, %Y') }}</small>
+                                </div>
+                                <p class="mb-0 text-muted">{{ review.feedback[:150] }}{% if review.feedback|length > 150 %}...{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if performance_reviews|length > 3 %}
+                    <small class="text-muted">Showing 3 of {{ performance_reviews|length }} reviews</small>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted text-center">No performance reviews available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Learning Progress -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-graduation-cap me-2"></i>Learning Progress</h5>
+            </div>
+            <div class="card-body">
+                {% if learning_progress %}
+                    <div class="row">
+                        {% for progress in learning_progress %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card {% if progress.completed %}border-success{% else %}border-warning{% endif %}">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ progress.module_name }}</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge {% if progress.completed %}bg-success{% else %}bg-warning{% endif %}">
+                                            {% if progress.completed %}Completed{% else %}In Progress{% endif %}
+                                        </span>
+                                        <span class="text-muted">{{ progress.score }}%</span>
+                                    </div>
+                                    {% if progress.completion_date %}
+                                    <small class="text-muted">Completed: {{ progress.completion_date.strftime('%b %d, %Y') }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No learning activities recorded</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Wellness History -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-heart me-2"></i>Wellness History</h5>
+            </div>
+            <div class="card-body">
+                {% if wellness_checks %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Stress Level</th>
+                                    <th>Sleep Quality</th>
+                                    <th>Focus Level</th>
+                                    <th>Overall Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for check in wellness_checks[:5] %}
+                                <tr>
+                                    <td>{{ check.check_date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar {% if check.stress_level <= 3 %}bg-success{% elif check.stress_level <= 6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ (check.stress_level / 10) * 100 }}%"></div>
+                                        </div>
+                                        <small>{{ check.stress_level }}/10</small>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar {% if check.sleep_quality >= 7 %}bg-success{% elif check.sleep_quality >= 5 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ (check.sleep_quality / 10) * 100 }}%"></div>
+                                        </div>
+                                        <small>{{ check.sleep_quality }}/10</small>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar {% if check.focus_level >= 7 %}bg-success{% elif check.focus_level >= 5 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ (check.focus_level / 10) * 100 }}%"></div>
+                                        </div>
+                                        <small>{{ check.focus_level }}/10</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if check.overall_wellness == 'green' %}bg-success{% elif check.overall_wellness == 'yellow' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ check.overall_wellness.title() }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if wellness_checks|length > 5 %}
+                    <small class="text-muted">Showing 5 of {{ wellness_checks|length }} wellness checks</small>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted text-center">No wellness data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
