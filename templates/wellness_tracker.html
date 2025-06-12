@@ -1,52 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}Employee Wellness Tracker - AI-Powered HR Platform{% endblock %}
+{% block title %}Employee Wellness Management - HR Management Portal{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <h1 class="display-5 mb-4">
-            <i class="fas fa-heart me-3"></i>Employee Wellness Tracker
+            <i class="fas fa-heart me-3"></i>Employee Wellness Management
         </h1>
-        <p class="lead text-muted">Track employee wellness with conversational check-ins and personalized recommendations</p>
+        <p class="lead text-muted">Monitor and manage employee wellness across your organization</p>
     </div>
 </div>
 
-{% if wellness_result %}
-<!-- Wellness Results -->
-<div class="row mb-5">
+<!-- Wellness Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-clipboard-check fa-2x mb-2"></i>
+                <h3>{{ total_checks }}</h3>
+                <p class="mb-0">Total Wellness Checks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-smile fa-2x mb-2"></i>
+                <h3>{{ green_status }}</h3>
+                <p class="mb-0">Healthy Status</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-meh fa-2x mb-2"></i>
+                <h3>{{ yellow_status }}</h3>
+                <p class="mb-0">Moderate Concern</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-frown fa-2x mb-2"></i>
+                <h3>{{ red_status }}</h3>
+                <p class="mb-0">High Concern</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employees Requiring Attention -->
+{% if concern_employees %}
+<div class="row mb-4">
     <div class="col-12">
-        <div class="card border-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %}">
-            <div class="card-header bg-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %} text-white">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
                 <h5 class="mb-0">
-                    <i class="fas fa-{% if wellness_result.status == 'green' %}smile{% elif wellness_result.status == 'yellow' %}meh{% else %}frown{% endif %} me-2"></i>
-                    Wellness Check Complete
+                    <i class="fas fa-exclamation-triangle me-2"></i>Employees Requiring Immediate Attention
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-3 text-center">
-                        <div class="display-4 text-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %}">
-                            {{ wellness_result.score }}
+                <div class="row">
+                    {% for employee in concern_employees %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ employee.name }}</h6>
+                                <p class="card-text text-muted">{{ employee.department }} - {{ employee.position }}</p>
+                                <a href="{{ url_for('employee_profile', employee_id=employee.id) }}" class="btn btn-sm btn-outline-primary">
+                                    View Profile
+                                </a>
+                            </div>
                         </div>
-                        <small class="text-muted">Wellness Score</small>
                     </div>
-                    <div class="col-md-3 text-center">
-                        <span class="badge bg-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %} fs-5 px-3 py-2">
-                            {{ wellness_result.status.title() }}
-                        </span>
-                        <div class="small text-muted mt-1">Overall Status</div>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Personalized Recommendations:</h6>
-                        <ul class="list-unstyled mb-0">
-                            {% for recommendation in wellness_result.recommendations[:3] %}
-                            <li class="mb-2">
-                                <i class="fas fa-arrow-right text-primary me-2"></i>{{ recommendation }}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -55,78 +85,78 @@
 {% endif %}
 
 <div class="row">
-    <!-- Wellness Check Form -->
+    <!-- Recent Wellness Checks -->
     <div class="col-lg-8 mb-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-comments me-2"></i>Wellness Check-In
+                    <i class="fas fa-history me-2"></i>Recent Wellness Checks
                 </h5>
             </div>
             <div class="card-body">
-                <form method="POST">
-                    <div class="mb-4">
-                        <label for="employee_id" class="form-label">Select Employee</label>
-                        <select class="form-select" id="employee_id" name="employee_id" required>
-                            <option value="">Choose an employee</option>
-                            {% for employee in employees %}
-                            <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                {% if recent_checks %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Department</th>
+                                <th>Date</th>
+                                <th>Stress</th>
+                                <th>Sleep</th>
+                                <th>Focus</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in recent_checks %}
+                            <tr>
+                                <td>
+                                    <strong>{{ check.employee.name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ check.employee.department }}</span>
+                                </td>
+                                <td>{{ check.check_date.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    <span class="badge {% if check.stress_level <= 3 %}bg-success{% elif check.stress_level <= 6 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ check.stress_level }}/10
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if check.sleep_quality >= 7 %}bg-success{% elif check.sleep_quality >= 5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ check.sleep_quality }}/10
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if check.focus_level >= 7 %}bg-success{% elif check.focus_level >= 5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ check.focus_level }}/10
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if check.overall_wellness == 'green' %}bg-success{% elif check.overall_wellness == 'yellow' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ check.overall_wellness.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('employee_profile', employee_id=check.employee_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        View Profile
+                                    </a>
+                                </td>
+                            </tr>
                             {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label">How would you rate your stress level today?</label>
-                        <p class="text-muted small mb-3">1 = Very Low Stress, 10 = Very High Stress</p>
-                        <div class="row">
-                            <div class="col-md-8">
-                                <input type="range" class="form-range" id="stress_level" name="stress_level" min="1" max="10" value="5" oninput="updateRangeValue('stress', this.value)">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text">Level:</span>
-                                    <span class="form-control text-center" id="stress_value">5</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label">How would you rate your sleep quality last night?</label>
-                        <p class="text-muted small mb-3">1 = Very Poor Sleep, 10 = Excellent Sleep</p>
-                        <div class="row">
-                            <div class="col-md-8">
-                                <input type="range" class="form-range" id="sleep_quality" name="sleep_quality" min="1" max="10" value="5" oninput="updateRangeValue('sleep', this.value)">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text">Quality:</span>
-                                    <span class="form-control text-center" id="sleep_value">5</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label">How is your focus and concentration today?</label>
-                        <p class="text-muted small mb-3">1 = Very Unfocused, 10 = Extremely Focused</p>
-                        <div class="row">
-                            <div class="col-md-8">
-                                <input type="range" class="form-range" id="focus_level" name="focus_level" min="1" max="10" value="5" oninput="updateRangeValue('focus', this.value)">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text">Focus:</span>
-                                    <span class="form-control text-center" id="focus_value">5</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-heart-pulse me-2"></i>Submit Wellness Check
-                    </button>
-                </form>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center p-4">
+                    <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No wellness checks recorded</h5>
+                    <p class="text-muted">Initialize sample data to see wellness tracking in action.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -98,7 +98,7 @@ def employee_profile(employee_id):
 
 @app.route('/resume-screening', methods=['GET', 'POST'])
 def resume_screening():
-    """Resume screening bot module"""
+    """HR Resume Screening Management - AI-powered candidate evaluation"""
     if request.method == 'POST':
         job_description = request.form.get('job_description', '')
         
@@ -203,31 +203,9 @@ def appraisal_dashboard():
                          reviews=reviews, 
                          dashboard_data=dashboard_data)
 
-@app.route('/learning-module', methods=['GET', 'POST'])
+@app.route('/learning-module')
 def learning_module():
-    """Gamified learning module"""
-    if request.method == 'POST':
-        employee_id = request.form.get('employee_id')
-        module_name = request.form.get('module_name')
-        answers = request.form.getlist('answers')
-        
-        # Calculate score (mock quiz data)
-        quiz_data = mock_data.get_quiz_data(module_name)
-        score = hr_analytics.calculate_quiz_score(answers, quiz_data['correct_answers'])
-        
-        # Save progress
-        progress = LearningProgress(
-            employee_id=employee_id,
-            module_name=module_name,
-            score=score,
-            completed=True,
-            completion_date=datetime.now()
-        )
-        db.session.add(progress)
-        db.session.commit()
-        
-        flash(f'Quiz completed! Your score: {score}/100', 'success')
-        return redirect(url_for('learning_module'))
+    """HR Employee Learning Management - Track and manage employee learning progress"""
     
     # Get learning modules and leaderboard
     modules = mock_data.get_learning_modules()
@@ -264,7 +242,7 @@ def skill_gap_analysis():
 
 @app.route('/wellness-tracker', methods=['GET', 'POST'])
 def wellness_tracker():
-    """Employee wellness tracker with chatbot"""
+    """HR Employee Wellness Management - View and manage all employee wellness data"""
     if request.method == 'POST':
         employee_id = request.form.get('employee_id')
         stress_level = int(request.form.get('stress_level', 5))
@@ -288,20 +266,35 @@ def wellness_tracker():
         db.session.add(wellness_check)
         db.session.commit()
         
-        return render_template('wellness_tracker.html', 
-                             wellness_result={
-                                 'status': wellness_status,
-                                 'score': wellness_score,
-                                 'recommendations': recommendations
-                             },
-                             employees=Employee.query.all())
+        flash('Wellness check recorded successfully', 'success')
+        return redirect(url_for('wellness_tracker'))
     
+    # Get all employees with their latest wellness data
     employees = Employee.query.all()
-    recent_checks = WellnessCheck.query.order_by(WellnessCheck.check_date.desc()).limit(10).all()
+    recent_checks = WellnessCheck.query.order_by(WellnessCheck.check_date.desc()).limit(20).all()
+    
+    # Wellness statistics
+    total_checks = WellnessCheck.query.count()
+    green_status = WellnessCheck.query.filter_by(overall_wellness='green').count()
+    yellow_status = WellnessCheck.query.filter_by(overall_wellness='yellow').count()
+    red_status = WellnessCheck.query.filter_by(overall_wellness='red').count()
+    
+    # Get employees with wellness concerns (red status in last 30 days)
+    from datetime import datetime, timedelta
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    concern_employees = db.session.query(Employee).join(WellnessCheck).filter(
+        WellnessCheck.overall_wellness == 'red',
+        WellnessCheck.check_date >= thirty_days_ago
+    ).distinct().all()
     
     return render_template('wellness_tracker.html', 
                          employees=employees,
-                         recent_checks=recent_checks)
+                         recent_checks=recent_checks,
+                         total_checks=total_checks,
+                         green_status=green_status,
+                         yellow_status=yellow_status,
+                         red_status=red_status,
+                         concern_employees=concern_employees)
 
 @app.route('/hr-insights')
 def hr_insights():
