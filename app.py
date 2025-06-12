@@ -42,7 +42,10 @@ app.jinja_env.filters['from_json'] = from_json
 with app.app_context():
     # Import models to ensure tables are created
     import models  # noqa: F401
+    # Drop all tables and recreate them to ensure schema is up to date
+    db.drop_all()
     db.create_all()
+    print("Database tables created successfully!")
 
 # Import routes
 import routes  # noqa: F401
