@@ -11,7 +11,10 @@ dependencies = [
     "gunicorn>=23.0.0",
     "openpyxl>=3.1.5",
     "pandas>=2.3.0",
+    "pillow==11.0.0",
     "psycopg2-binary>=2.9.10",
+    "pymupdf==1.25.0",
+    "pytesseract==0.3.13",
     "sqlalchemy>=2.0.41",
     "werkzeug>=3.1.3",
 ]
