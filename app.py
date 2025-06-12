@@ -40,14 +40,27 @@ def from_json(value):
 app.jinja_env.filters['from_json'] = from_json
 
 with app.app_context():
-    # Import models to ensure tables are created
+    # Import models first
     import models  # noqa: F401
-    # Drop all tables and recreate them to ensure schema is up to date
-    db.drop_all()
+    
+    # Ensure clean database creation
+    try:
+        db.drop_all()
+        print("Dropped all existing tables")
+    except Exception as e:
+        print(f"Drop tables warning: {e}")
+    
+    # Create all tables with proper schema
     db.create_all()
     print("Database tables created successfully!")
+    
+    # Verify the Employee table has the correct columns
+    from sqlalchemy import inspect
+    inspector = inspect(db.engine)
+    employee_columns = [col['name'] for col in inspector.get_columns('employee')]
+    print(f"Employee table columns: {employee_columns}")
 
-# Import routes
+# Import routes after database is ready
 import routes  # noqa: F401
 
 if __name__ == '__main__':
