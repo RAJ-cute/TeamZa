@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Leadership Potential Identifier - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-crown me-3"></i>Leadership Potential Identifier
+        </h1>
+        <p class="lead text-muted">Discover high-potential employees and create personalized development plans</p>
+    </div>
+</div>
+
+{% if candidates %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ candidates|length }}</h3>
+                        <small class="text-muted">High-Potential Employees</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-success">{{ (candidates|map(attribute='potential_score')|sum / candidates|length)|round(1) }}</h3>
+                        <small class="text-muted">Average Potential Score</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-warning">{{ candidates|selectattr('potential_score', 'ge', 8.5)|list|length }}</h3>
+                        <small class="text-muted">Executive Ready</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">{{ candidates|selectattr('potential_score', 'ge', 7.0)|selectattr('potential_score', 'lt', 8.5)|list|length }}</h3>
+                        <small class="text-muted">Emerging Leaders</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for candidate in candidates %}
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 {% if candidate.potential_score >= 8.5 %}border-warning{% elif candidate.potential_score >= 8.0 %}border-success{% else %}border-info{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        {% if candidate.potential_score >= 8.5 %}
+                        <i class="fas fa-crown text-warning fa-lg"></i>
+                        {% elif candidate.potential_score >= 8.0 %}
+                        <i class="fas fa-star text-success fa-lg"></i>
+                        {% else %}
+                        <i class="fas fa-arrow-up text-info fa-lg"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h6 class="mb-0">{{ candidate.employee.name }}</h6>
+                        <small class="text-muted">{{ candidate.employee.department }} - {{ candidate.employee.position }}</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-{% if candidate.potential_score >= 8.5 %}warning{% elif candidate.potential_score >= 8.0 %}success{% else %}info{% endif %} fs-6">
+                        {{ candidate.potential_score }}/10
+                    </div>
+                    <div>
+                        <small class="text-muted">
+                            {% if candidate.potential_score >= 8.5 %}
+                            Executive Ready
+                            {% elif candidate.potential_score >= 8.0 %}
+                            High Potential
+                            {% else %}
+                            Emerging Leader
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="mb-2">Leadership Potential Breakdown</h6>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-{% if candidate.potential_score >= 8.5 %}warning{% elif candidate.potential_score >= 8.0 %}success{% else %}info{% endif %}" 
+                             style="width: {{ candidate.potential_score * 10 }}%">
+                            {{ candidate.potential_score }}/10
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-muted">Performance Score:</small>
+                        <div class="fw-bold">{{ candidate.employee.performance_score or 'N/A' }}/10</div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Years of Experience:</small>
+                        <div class="fw-bold">{{ ((candidate.employee.hire_date and (now() - candidate.employee.hire_date).days // 365) or 0) }} years</div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="mb-2">Recommended Growth Actions</h6>
+                    <ul class="list-unstyled">
+                        {% for action in candidate.growth_actions[:3] %}
+                        <li class="mb-2">
+                            <i class="fas fa-arrow-right text-primary me-2"></i>
+                            <span class="small">{{ action }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Hire Date:</small>
+                        <div class="small">{{ candidate.employee.hire_date.strftime('%B %Y') if candidate.employee.hire_date else 'N/A' }}</div>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#developmentModal{{ loop.index }}">
+                        <i class="fas fa-clipboard-list me-1"></i>Create Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Development Plan Modal -->
+    <div class="modal fade" id="developmentModal{{ loop.index }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-clipboard-list me-2"></i>Development Plan for {{ candidate.employee.name }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Current Status</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Department:</strong> {{ candidate.employee.department }}</li>
+                                <li><strong>Position:</strong> {{ candidate.employee.position }}</li>
+                                <li><strong>Potential Score:</strong> {{ candidate.potential_score }}/10</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Development Priority</h6>
+                            <span class="badge bg-{% if candidate.potential_score >= 8.5 %}warning{% elif candidate.potential_score >= 8.0 %}success{% else %}info{% endif %} fs-6">
+                                {% if candidate.potential_score >= 8.5 %}
+                                Executive Track
+                                {% elif candidate.potential_score >= 8.0 %}
+                                Leadership Track
+                                {% else %}
+                                Development Track
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <h6>Recommended Actions</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Timeline</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for action in candidate.growth_actions %}
+                                <tr>
+                                    <td>{{ action }}</td>
+                                    <td>
+                                        {% if loop.index <= 2 %}
+                                        Next 3 months
+                                        {% else %}
+                                        3-6 months
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if loop.index == 1 %}danger{% elif loop.index == 2 %}warning{% else %}info{% endif %}">
+                                            {% if loop.index == 1 %}
+                                            High
+                                            {% elif loop.index == 2 %}
+                                            Medium
+                                            {% else %}
+                                            Low
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Save Development Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Leadership Pipeline Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="leadershipChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                <h4>No High-Potential Employees Found</h4>
+                <p class="text-muted mb-4">
+                    It looks like we don't have enough employee data to identify leadership potential. 
+                    Try initializing some sample data first.
+                </p>
+                <a href="{{ url_for('initialize_data') }}" class="btn btn-primary">
+                    <i class="fas fa-database me-2"></i>Initialize Sample Data
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if candidates %}
+<script>
+// Leadership Pipeline Chart
+const ctx = document.getElementById('leadershipChart').getContext('2d');
+const candidates = {{ candidates | tojsonfilter | safe }};
+
+const scoreRanges = {
+    'Executive Ready (8.5+)': candidates.filter(c => c.potential_score >= 8.5).length,
+    'High Potential (8.0-8.4)': candidates.filter(c => c.potential_score >= 8.0 && c.potential_score < 8.5).length,
+    'Emerging Leaders (7.0-7.9)': candidates.filter(c => c.potential_score >= 7.0 && c.potential_score < 8.0).length
+};
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(scoreRanges),
+        datasets: [{
+            data: Object.values(scoreRanges),
+            backgroundColor: [
+                '#ffc107',
+                '#28a745',
+                '#17a2b8'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            },
+            title: {
+                display: true,
+                text: 'Leadership Potential Distribution'
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

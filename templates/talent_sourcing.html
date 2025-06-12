@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Talent Sourcing - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-search me-3"></i>Smart Talent Sourcing
+        </h1>
+        <p class="lead text-muted">Find and source top candidates from various platforms with AI-powered matching</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bullseye me-2"></i>Job Requirements
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="job_title" class="form-label">Job Title</label>
+                        <input type="text" class="form-control" id="job_title" name="job_title" 
+                               placeholder="e.g., Senior Software Engineer" value="{{ job_title or '' }}" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="job_description" class="form-label">Job Description</label>
+                        <textarea class="form-control" id="job_description" name="job_description" rows="8" 
+                                  placeholder="Describe the role requirements, skills needed, etc..." required>{{ request.form.job_description or '' }}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Find Candidates
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Sourcing Features
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <i class="fab fa-github fa-2x text-primary mb-2"></i>
+                            <h6>GitHub</h6>
+                            <small class="text-muted">Developer profiles</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <i class="fab fa-linkedin fa-2x text-info mb-2"></i>
+                            <h6>LinkedIn</h6>
+                            <small class="text-muted">Professional network</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <i class="fab fa-stack-overflow fa-2x text-warning mb-2"></i>
+                            <h6>Stack Overflow</h6>
+                            <small class="text-muted">Tech community</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <i class="fab fa-twitter fa-2x text-primary mb-2"></i>
+                            <h6>Twitter</h6>
+                            <small class="text-muted">Tech influencers</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="mb-3">AI Matching Criteria:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i>Skill relevance</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Experience level</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Project portfolio</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Community engagement</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if candidates %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="fas fa-users me-2"></i>Sourced Candidates for "{{ job_title }}"
+        </h3>
+    </div>
+</div>
+
+<div class="row">
+    {% for candidate in candidates %}
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="https://via.placeholder.com/40x40/007bff/ffffff?text={{ candidate.name[0] }}" 
+                         class="rounded-circle me-3" alt="Avatar">
+                    <div>
+                        <h6 class="mb-0">{{ candidate.name }}</h6>
+                        <small class="text-muted">{{ candidate.location }}</small>
+                    </div>
+                </div>
+                <span class="badge bg-{% if candidate.relevance_score >= 8 %}success{% elif candidate.relevance_score >= 6 %}warning{% else %}secondary{% endif %} fs-6">
+                    {{ candidate.relevance_score }}/10
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>{{ candidate.current_role }}</strong>
+                    <br>
+                    <small class="text-muted">{{ candidate.company }}</small>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Top Skills:</small>
+                    <div class="mt-1">
+                        {% for skill in candidate.skills[:5] %}
+                        <span class="badge bg-primary me-1 mb-1">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Experience:</small>
+                    <div class="mt-1">
+                        <i class="fas fa-briefcase me-1 text-info"></i>{{ candidate.years_experience }} years
+                        <span class="ms-3">
+                            <i class="fas fa-graduation-cap me-1 text-success"></i>{{ candidate.education }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Platform Activity:</small>
+                    <div class="row mt-1">
+                        {% for platform, profile in candidate.platforms.items() %}
+                        <div class="col-6 mb-1">
+                            <i class="fab fa-{{ platform }} me-1"></i>
+                            <a href="{{ profile.url }}" target="_blank" class="text-decoration-none">
+                                {{ profile.username }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">AI Assessment:</small>
+                    <p class="small mt-1">{{ candidate.assessment }}</p>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Availability:</small>
+                        <span class="badge bg-{% if candidate.availability == 'Available' %}success{% elif candidate.availability == 'Open to offers' %}warning{% else %}secondary{% endif %}">
+                            {{ candidate.availability }}
+                        </span>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-envelope me-1"></i>Contact
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-chart-bar me-2"></i>Sourcing Summary
+                </h6>
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-primary">{{ candidates|length }}</h4>
+                        <small class="text-muted">Candidates Found</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-success">{{ candidates|selectattr('relevance_score', 'ge', 8)|list|length }}</h4>
+                        <small class="text-muted">High Match</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-info">{{ candidates|selectattr('availability', 'equalto', 'Available')|list|length }}</h4>
+                        <small class="text-muted">Available Now</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h4 class="text-warning">{{ (candidates|map(attribute='years_experience')|sum / candidates|length)|round(1) }}</h4>
+                        <small class="text-muted">Avg Experience</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

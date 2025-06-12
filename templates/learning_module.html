@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Gamified Learning Module - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-book me-3"></i>Gamified Learning Hub
+        </h1>
+        <p class="lead text-muted">Engage in interactive learning modules with quizzes, points, and achievements</p>
+    </div>
+</div>
+
+<!-- Learning Stats -->
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                <h3 class="card-title">{{ modules|length }}</h3>
+                <p class="card-text">Learning Modules</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3 class="card-title">{{ leaderboard|length }}</h3>
+                <p class="card-text">Active Learners</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-trophy fa-2x mb-2"></i>
+                <h3 class="card-title">{{ leaderboard[0].total_score if leaderboard else 0 }}</h3>
+                <p class="card-text">Top Score</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info">
+            <div class="card-body text-center">
+                <i class="fas fa-medal fa-2x mb-2"></i>
+                <h3 class="card-title">{{ leaderboard|sum(attribute='modules_completed') if leaderboard else 0 }}</h3>
+                <p class="card-text">Total Completions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Learning Modules -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-book-open me-2"></i>Available Learning Modules
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for module in modules %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="{{ module.icon }} fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="card-title mb-0">{{ module.title }}</h6>
+                                        <small class="text-muted">{{ module.duration }} minutes</small>
+                                    </div>
+                                </div>
+                                <p class="card-text small">{{ module.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-info">{{ module.difficulty }}</span>
+                                    <span class="text-muted small">{{ module.questions }} questions</span>
+                                </div>
+                                <button class="btn btn-primary btn-sm w-100" onclick="startQuiz('{{ module.id }}', '{{ module.title }}')">
+                                    <i class="fas fa-play me-1"></i>Start Module
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaderboard -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Leaderboard
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if leaderboard %}
+                <div class="list-group list-group-flush">
+                    {% for learner in leaderboard %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-{% if loop.index == 1 %}warning{% elif loop.index == 2 %}secondary{% elif loop.index == 3 %}info{% else %}primary{% endif %} rounded-circle me-3" 
+                                 style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                {{ learner.rank }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ learner.name }}</h6>
+                                <small class="text-muted">
+                                    <span class="badge bg-primary">{{ learner.badge }}</span>
+                                    {{ learner.modules_completed }} modules
+                                </small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">{{ learner.total_score }}</div>
+                            <small class="text-muted">points</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No learners yet!</p>
+                    <p class="small text-muted">Complete a module to appear on the leaderboard</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="modal fade" id="quizModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quizModalTitle">
+                    <i class="fas fa-question-circle me-2"></i>Quiz
+                </h5>
+                <div class="ms-auto">
+                    <span class="badge bg-info" id="questionCounter">Question 1 of 5</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="quizProgress" class="progress mb-4" style="height: 8px;">
+                    <div class="progress-bar" role="progressbar" style="width: 20%"></div>
+                </div>
+                
+                <div id="quizContent">
+                    <!-- Quiz questions will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+                <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+                <button type="button" class="btn btn-success" id="submitBtn" onclick="submitQuiz()" style="display: none;">Submit Quiz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Modal -->
+<div class="modal fade" id="resultsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-award me-2"></i>Quiz Results
+                </h5>
+            </div>
+            <div class="modal-body text-center" id="resultsContent">
+                <!-- Results will be displayed here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">Take Another Quiz</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentQuiz = null;
+let currentQuestion = 0;
+let userAnswers = [];
+let quizData = null;
+let selectedEmployee = null;
+
+function startQuiz(moduleId, moduleTitle) {
+    // Check if employee is selected
+    const employeeSelect = document.createElement('select');
+    employeeSelect.className = 'form-select mb-3';
+    employeeSelect.innerHTML = '<option value="">Select Employee</option>';
+    
+    {% for employee in employees %}
+    employeeSelect.innerHTML += '<option value="{{ employee.id }}">{{ employee.name }}</option>';
+    {% endfor %}
+    
+    // Show employee selection first
+    const modal = new bootstrap.Modal(document.getElementById('quizModal'));
+    document.getElementById('quizModalTitle').innerHTML = '<i class="fas fa-user me-2"></i>Select Employee';
+    document.getElementById('quizContent').innerHTML = `
+        <div class="text-center">
+            <h6>Who is taking this quiz?</h6>
+            <div class="mb-3">
+                ${employeeSelect.outerHTML}
+            </div>
+            <button class="btn btn-primary" onclick="loadQuiz('${moduleId}', '${moduleTitle}')">
+                <i class="fas fa-play me-1"></i>Start Quiz
+            </button>
+        </div>
+    `;
+    document.getElementById('prevBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('questionCounter').style.display = 'none';
+    document.getElementById('quizProgress').style.display = 'none';
+    
+    modal.show();
+}
+
+async function loadQuiz(moduleId, moduleTitle) {
+    const employeeId = document.querySelector('.form-select').value;
+    if (!employeeId) {
+        alert('Please select an employee');
+        return;
+    }
+    
+    selectedEmployee = employeeId;
+    currentQuiz = moduleId;
+    
+    try {
+        const response = await fetch(`/api/quiz/${moduleId}`);
+        quizData = await response.json();
+        
+        document.getElementById('quizModalTitle').innerHTML = `<i class="fas fa-question-circle me-2"></i>${moduleTitle}`;
+        document.getElementById('questionCounter').style.display = 'inline-block';
+        document.getElementById('quizProgress').style.display = 'block';
+        document.getElementById('prevBtn').style.display = 'inline-block';
+        document.getElementById('nextBtn').style.display = 'inline-block';
+        
+        currentQuestion = 0;
+        userAnswers = [];
+        displayQuestion();
+    } catch (error) {
+        console.error('Error loading quiz:', error);
+        alert('Error loading quiz. Please try again.');
+    }
+}
+
+function displayQuestion() {
+    const question = quizData.questions[currentQuestion];
+    const totalQuestions = quizData.questions.length;
+    
+    document.getElementById('questionCounter').textContent = `Question ${currentQuestion + 1} of ${totalQuestions}`;
+    
+    const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+    document.querySelector('.progress-bar').style.width = `${progress}%`;
+    
+    const optionsHtml = question.options.map((option, index) => `
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="answer" value="${index}" id="option${index}">
+            <label class="form-check-label" for="option${index}">
+                ${option}
+            </label>
+        </div>
+    `).join('');
+    
+    document.getElementById('quizContent').innerHTML = `
+        <div class="question-container">
+            <h6 class="mb-3">${question.question}</h6>
+            ${optionsHtml}
+        </div>
+    `;
+    
+    // Restore previous answer if exists
+    if (userAnswers[currentQuestion] !== undefined) {
+        document.querySelector(`input[value="${userAnswers[currentQuestion]}"]`).checked = true;
+    }
+    
+    // Update button states
+    document.getElementById('prevBtn').disabled = currentQuestion === 0;
+    document.getElementById('nextBtn').style.display = currentQuestion === totalQuestions - 1 ? 'none' : 'inline-block';
+    document.getElementById('submitBtn').style.display = currentQuestion === totalQuestions - 1 ? 'inline-block' : 'none';
+}
+
+function nextQuestion() {
+    saveCurrentAnswer();
+    if (currentQuestion < quizData.questions.length - 1) {
+        currentQuestion++;
+        displayQuestion();
+    }
+}
+
+function previousQuestion() {
+    saveCurrentAnswer();
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        displayQuestion();
+    }
+}
+
+function saveCurrentAnswer() {
+    const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+    if (selectedAnswer) {
+        userAnswers[currentQuestion] = parseInt(selectedAnswer.value);
+    }
+}
+
+async function submitQuiz() {
+    saveCurrentAnswer();
+    
+    // Check if all questions are answered
+    if (userAnswers.length !== quizData.questions.length || userAnswers.some(answer => answer === undefined)) {
+        alert('Please answer all questions before submitting.');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('employee_id', selectedEmployee);
+        formData.append('module_name', currentQuiz);
+        userAnswers.forEach((answer, index) => {
+            formData.append('answers', answer);
+        });
+        
+        const response = await fetch('/learning-module', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            // Calculate score for display
+            const correctAnswers = quizData.correct_answers;
+            const score = Math.round((userAnswers.filter((answer, index) => answer === correctAnswers[index]).length / correctAnswers.length) * 100);
+            
+            showResults(score);
+        } else {
+            alert('Error submitting quiz. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error submitting quiz:', error);
+        alert('Error submitting quiz. Please try again.');
+    }
+}
+
+function showResults(score) {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('quizModal'));
+    modal.hide();
+    
+    let badge = 'Novice';
+    let badgeColor = 'secondary';
+    
+    if (score >= 90) {
+        badge = 'Expert';
+        badgeColor = 'success';
+    } else if (score >= 80) {
+        badge = 'Advanced';
+        badgeColor = 'info';
+    } else if (score >= 70) {
+        badge = 'Intermediate';
+        badgeColor = 'warning';
+    } else if (score >= 60) {
+        badge = 'Beginner';
+        badgeColor = 'primary';
+    }
+    
+    document.getElementById('resultsContent').innerHTML = `
+        <div class="mb-4">
+            <i class="fas fa-trophy fa-4x text-${badgeColor} mb-3"></i>
+            <h4>Quiz Completed!</h4>
+        </div>
+        <div class="mb-4">
+            <h2 class="text-${badgeColor}">${score}%</h2>
+            <p class="text-muted">Your Score</p>
+        </div>
+        <div class="mb-4">
+            <span class="badge bg-${badgeColor} fs-6">${badge}</span>
+            <p class="text-muted mt-2">Achievement Unlocked</p>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <h6>${userAnswers.filter((answer, index) => answer === quizData.correct_answers[index]).length}</h6>
+                <small class="text-muted">Correct</small>
+            </div>
+            <div class="col-6">
+                <h6>${userAnswers.length - userAnswers.filter((answer, index) => answer === quizData.correct_answers[index]).length}</h6>
+                <small class="text-muted">Incorrect</small>
+            </div>
+        </div>
+    `;
+    
+    const resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));
+    resultsModal.show();
+}
+</script>
+{% endblock %}

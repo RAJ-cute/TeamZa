@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Wellness Tracker - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-heart me-3"></i>Employee Wellness Tracker
+        </h1>
+        <p class="lead text-muted">Track employee wellness with conversational check-ins and personalized recommendations</p>
+    </div>
+</div>
+
+{% if wellness_result %}
+<!-- Wellness Results -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card border-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %}">
+            <div class="card-header bg-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %} text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if wellness_result.status == 'green' %}smile{% elif wellness_result.status == 'yellow' %}meh{% else %}frown{% endif %} me-2"></i>
+                    Wellness Check Complete
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <div class="display-4 text-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %}">
+                            {{ wellness_result.score }}
+                        </div>
+                        <small class="text-muted">Wellness Score</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <span class="badge bg-{% if wellness_result.status == 'green' %}success{% elif wellness_result.status == 'yellow' %}warning{% else %}danger{% endif %} fs-5 px-3 py-2">
+                            {{ wellness_result.status.title() }}
+                        </span>
+                        <div class="small text-muted mt-1">Overall Status</div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Personalized Recommendations:</h6>
+                        <ul class="list-unstyled mb-0">
+                            {% for recommendation in wellness_result.recommendations[:3] %}
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-primary me-2"></i>{{ recommendation }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Wellness Check Form -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>Wellness Check-In
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="employee_id" class="form-label">Select Employee</label>
+                        <select class="form-select" id="employee_id" name="employee_id" required>
+                            <option value="">Choose an employee</option>
+                            {% for employee in employees %}
+                            <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">How would you rate your stress level today?</label>
+                        <p class="text-muted small mb-3">1 = Very Low Stress, 10 = Very High Stress</p>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="range" class="form-range" id="stress_level" name="stress_level" min="1" max="10" value="5" oninput="updateRangeValue('stress', this.value)">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">Level:</span>
+                                    <span class="form-control text-center" id="stress_value">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">How would you rate your sleep quality last night?</label>
+                        <p class="text-muted small mb-3">1 = Very Poor Sleep, 10 = Excellent Sleep</p>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="range" class="form-range" id="sleep_quality" name="sleep_quality" min="1" max="10" value="5" oninput="updateRangeValue('sleep', this.value)">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">Quality:</span>
+                                    <span class="form-control text-center" id="sleep_value">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">How is your focus and concentration today?</label>
+                        <p class="text-muted small mb-3">1 = Very Unfocused, 10 = Extremely Focused</p>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="range" class="form-range" id="focus_level" name="focus_level" min="1" max="10" value="5" oninput="updateRangeValue('focus', this.value)">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">Focus:</span>
+                                    <span class="form-control text-center" id="focus_value">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-heart-pulse me-2"></i>Submit Wellness Check
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wellness Tips -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Wellness Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-success">
+                        <i class="fas fa-leaf me-2"></i>Stress Management
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Take deep breaths for 5 minutes</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Go for a short walk</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Practice mindfulness</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-info">
+                        <i class="fas fa-moon me-2"></i>Better Sleep
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-info me-2"></i>Avoid screens before bed</li>
+                        <li><i class="fas fa-check text-info me-2"></i>Keep a regular sleep schedule</li>
+                        <li><i class="fas fa-check text-info me-2"></i>Create a relaxing routine</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-warning">
+                        <i class="fas fa-brain me-2"></i>Improve Focus
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-warning me-2"></i>Use the Pomodoro Technique</li>
+                        <li><i class="fas fa-check text-warning me-2"></i>Minimize distractions</li>
+                        <li><i class="fas fa-check text-warning me-2"></i>Take regular breaks</li>
+                    </ul>
+                </div>
+                
+                <div class="text-center">
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#wellnessResourcesModal">
+                        <i class="fas fa-external-link-alt me-1"></i>More Resources
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Wellness Checks -->
+{% if recent_checks %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Wellness Checks
+                </h5>
+                <span class="badge bg-info">{{ recent_checks|length }} Recent Checks</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Check Date</th>
+                                <th>Stress Level</th>
+                                <th>Sleep Quality</th>
+                                <th>Focus Level</th>
+                                <th>Overall Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in recent_checks %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/32x32/007bff/ffffff?text={{ check.employee.name[0] }}" 
+                                             class="rounded-circle me-2" alt="Avatar">
+                                        <div>
+                                            <div class="fw-bold">{{ check.employee.name }}</div>
+                                            <small class="text-muted">{{ check.employee.department }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ check.check_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-{% if check.stress_level <= 3 %}success{% elif check.stress_level <= 6 %}warning{% else %}danger{% endif %} me-2">
+                                            {{ check.stress_level }}
+                                        </span>
+                                        <div class="progress" style="width: 50px; height: 8px;">
+                                            <div class="progress-bar bg-{% if check.stress_level <= 3 %}success{% elif check.stress_level <= 6 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ check.stress_level * 10 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-{% if check.sleep_quality >= 7 %}success{% elif check.sleep_quality >= 4 %}warning{% else %}danger{% endif %} me-2">
+                                            {{ check.sleep_quality }}
+                                        </span>
+                                        <div class="progress" style="width: 50px; height: 8px;">
+                                            <div class="progress-bar bg-{% if check.sleep_quality >= 7 %}success{% elif check.sleep_quality >= 4 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ check.sleep_quality * 10 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-{% if check.focus_level >= 7 %}success{% elif check.focus_level >= 4 %}warning{% else %}danger{% endif %} me-2">
+                                            {{ check.focus_level }}
+                                        </span>
+                                        <div class="progress" style="width: 50px; height: 8px;">
+                                            <div class="progress-bar bg-{% if check.focus_level >= 7 %}success{% elif check.focus_level >= 4 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ check.focus_level * 10 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if check.overall_wellness == 'green' %}success{% elif check.overall_wellness == 'yellow' %}warning{% else %}danger{% endif %}">
+                                        {{ check.overall_wellness.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#checkModal{{ loop.index }}">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Check Detail Modal -->
+                            <div class="modal fade" id="checkModal{{ loop.index }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                Wellness Check - {{ check.employee.name }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <strong>Employee:</strong> {{ check.employee.name }}<br>
+                                                    <strong>Department:</strong> {{ check.employee.department }}<br>
+                                                    <strong>Check Date:</strong> {{ check.check_date.strftime('%Y-%m-%d %H:%M') }}
+                                                </div>
+                                                <div class="col-6">
+                                                    <strong>Overall Status:</strong> 
+                                                    <span class="badge bg-{% if check.overall_wellness == 'green' %}success{% elif check.overall_wellness == 'yellow' %}warning{% else %}danger{% endif %}">
+                                                        {{ check.overall_wellness.title() }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mb-4">
+                                                <div class="col-4 text-center">
+                                                    <h6>Stress Level</h6>
+                                                    <div class="display-6 text-{% if check.stress_level <= 3 %}success{% elif check.stress_level <= 6 %}warning{% else %}danger{% endif %}">
+                                                        {{ check.stress_level }}
+                                                    </div>
+                                                    <small class="text-muted">out of 10</small>
+                                                </div>
+                                                <div class="col-4 text-center">
+                                                    <h6>Sleep Quality</h6>
+                                                    <div class="display-6 text-{% if check.sleep_quality >= 7 %}success{% elif check.sleep_quality >= 4 %}warning{% else %}danger{% endif %}">
+                                                        {{ check.sleep_quality }}
+                                                    </div>
+                                                    <small class="text-muted">out of 10</small>
+                                                </div>
+                                                <div class="col-4 text-center">
+                                                    <h6>Focus Level</h6>
+                                                    <div class="display-6 text-{% if check.focus_level >= 7 %}success{% elif check.focus_level >= 4 %}warning{% else %}danger{% endif %}">
+                                                        {{ check.focus_level }}
+                                                    </div>
+                                                    <small class="text-muted">out of 10</small>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if check.recommendations %}
+                                            <h6>Recommendations:</h6>
+                                            <ul class="list-unstyled">
+                                                {% for recommendation in (check.recommendations | from_json) %}
+                                                <li class="mb-2">
+                                                    <i class="fas fa-arrow-right text-primary me-2"></i>{{ recommendation }}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary">
+                                                <i class="fas fa-heart me-1"></i>Follow Up
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Wellness Resources Modal -->
+<div class="modal fade" id="wellnessResourcesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-heart me-2"></i>Wellness Resources
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-primary">
+                            <i class="fas fa-spa me-2"></i>Stress Relief
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>5-Minute Meditation</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>Breathing Exercises</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>Progressive Muscle Relaxation</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-success">
+                            <i class="fas fa-dumbbell me-2"></i>Physical Wellness
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>Desk Exercises</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>Stretching Routines</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>Walking Challenges</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-info">
+                            <i class="fas fa-moon me-2"></i>Sleep Hygiene
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-book me-2"></i>Sleep Tips Guide</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-play-circle me-2"></i>Bedtime Routine</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-moon me-2"></i>Sleep Tracker</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-warning">
+                            <i class="fas fa-users me-2"></i>Support Network
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-phone me-2"></i>Employee Assistance Program</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-comments me-2"></i>Peer Support Groups</a></li>
+                            <li><a href="#" class="text-decoration-none"><i class="fas fa-calendar me-2"></i>Wellness Workshops</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateRangeValue(type, value) {
+    document.getElementById(type + '_value').textContent = value;
+}
+
+// Initialize range values on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateRangeValue('stress', document.getElementById('stress_level').value);
+    updateRangeValue('sleep', document.getElementById('sleep_quality').value);
+    updateRangeValue('focus', document.getElementById('focus_level').value);
+});
+</script>
+{% endblock %}

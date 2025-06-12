@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Screening Bot - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-file-alt me-3"></i>Resume Screening Bot
+        </h1>
+        <p class="lead text-muted">Upload resumes and job descriptions to get AI-powered candidate screening</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>Upload Resumes & Job Description
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="job_description" class="form-label">Job Description</label>
+                        <textarea class="form-control" id="job_description" name="job_description" rows="6" 
+                                  placeholder="Paste the job description here..." required>{{ job_description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="resumes" class="form-label">Upload Resumes</label>
+                        <input class="form-control" type="file" id="resumes" name="resumes" multiple 
+                               accept=".txt,.pdf,.doc,.docx" required>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            You can upload multiple files (TXT, PDF, DOC, DOCX)
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Screen Candidates
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>How It Works
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex mb-3">
+                    <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">1</div>
+                    <div>
+                        <strong>Extract Skills</strong><br>
+                        <small class="text-muted">AI analyzes resumes to identify relevant skills and experience</small>
+                    </div>
+                </div>
+                <div class="d-flex mb-3">
+                    <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">2</div>
+                    <div>
+                        <strong>Match Score</strong><br>
+                        <small class="text-muted">Calculate compatibility between resume and job requirements</small>
+                    </div>
+                </div>
+                <div class="d-flex mb-3">
+                    <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">3</div>
+                    <div>
+                        <strong>Rank Candidates</strong><br>
+                        <small class="text-muted">Get top 3 candidates with detailed reasoning</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="fas fa-trophy me-2"></i>Top Candidates
+        </h3>
+    </div>
+</div>
+
+<div class="row">
+    {% for candidate in results %}
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 {% if loop.index == 1 %}border-warning{% elif loop.index == 2 %}border-info{% else %}border-success{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    {% if loop.index == 1 %}
+                        <i class="fas fa-medal text-warning me-2"></i>1st Place
+                    {% elif loop.index == 2 %}
+                        <i class="fas fa-medal text-info me-2"></i>2nd Place
+                    {% else %}
+                        <i class="fas fa-medal text-success me-2"></i>3rd Place
+                    {% endif %}
+                </h6>
+                <span class="badge bg-{% if candidate.score >= 80 %}success{% elif candidate.score >= 60 %}warning{% else %}danger{% endif %} fs-6">
+                    {{ candidate.score }}%
+                </span>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-user me-2"></i>{{ candidate.filename }}
+                </h6>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Skills Found:</small>
+                    <div class="mt-1">
+                        {% for skill in candidate.skills[:6] %}
+                        <span class="badge bg-secondary me-1 mb-1">{{ skill }}</span>
+                        {% endfor %}
+                        {% if candidate.skills|length > 6 %}
+                        <span class="badge bg-light text-dark">+{{ candidate.skills|length - 6 }} more</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Match Score:</small>
+                    <div class="progress mt-1" style="height: 25px;">
+                        <div class="progress-bar bg-{% if candidate.score >= 80 %}success{% elif candidate.score >= 60 %}warning{% else %}danger{% endif %}" 
+                             style="width: {{ candidate.score }}%">
+                            {{ candidate.score }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <small class="text-muted">AI Analysis:</small>
+                    <p class="small mt-1">{{ candidate.reasoning }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('resumes').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const fileNames = Array.from(files).map(file => file.name).join(', ');
+    if (files.length > 0) {
+        console.log('Selected files:', fileNames);
+    }
+});
+</script>
+{% endblock %}

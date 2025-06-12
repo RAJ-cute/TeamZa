@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-tachometer-alt me-3"></i>HR Platform Dashboard
+        </h1>
+        <p class="lead text-muted">Welcome to your AI-powered Human Resources management platform</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3 class="card-title">{{ total_employees }}</h3>
+                <p class="card-text">Total Employees</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info">
+            <div class="card-body text-center">
+                <i class="fas fa-file-alt fa-2x mb-2"></i>
+                <h3 class="card-title">{{ total_resumes }}</h3>
+                <p class="card-text">Resumes Processed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                <h3 class="card-title">{{ active_learning }}</h3>
+                <p class="card-text">Active Learning</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success">
+            <div class="card-body text-center">
+                <i class="fas fa-heart fa-2x mb-2"></i>
+                <h3 class="card-title">{{ recent_wellness|length }}</h3>
+                <p class="card-text">Wellness Checks</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- HR Modules -->
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">HR Modules</h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Resume Screening -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-file-alt fa-2x text-primary me-3"></i>
+                    <h5 class="card-title mb-0">Resume Screening Bot</h5>
+                </div>
+                <p class="card-text">Upload resumes and get AI-powered candidate screening with match scores and rankings.</p>
+                <a href="{{ url_for('resume_screening') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right me-1"></i>Start Screening
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Talent Sourcing -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-search fa-2x text-info me-3"></i>
+                    <h5 class="card-title mb-0">Smart Talent Sourcing</h5>
+                </div>
+                <p class="card-text">Find and source candidates from various platforms with AI-powered relevance scoring.</p>
+                <a href="{{ url_for('talent_sourcing') }}" class="btn btn-outline-info">
+                    <i class="fas fa-arrow-right me-1"></i>Find Talent
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leadership Potential -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-crown fa-2x text-warning me-3"></i>
+                    <h5 class="card-title mb-0">Leadership Potential</h5>
+                </div>
+                <p class="card-text">Identify high-potential employees and get personalized development recommendations.</p>
+                <a href="{{ url_for('leadership_potential') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-arrow-right me-1"></i>Identify Leaders
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appraisal Dashboard -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-clipboard-check fa-2x text-success me-3"></i>
+                    <h5 class="card-title mb-0">AI Appraisal Dashboard</h5>
+                </div>
+                <p class="card-text">Analyze performance reviews with sentiment analysis and trend visualization.</p>
+                <a href="{{ url_for('appraisal_dashboard') }}" class="btn btn-outline-success">
+                    <i class="fas fa-arrow-right me-1"></i>View Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Module -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-book fa-2x text-primary me-3"></i>
+                    <h5 class="card-title mb-0">Gamified Learning</h5>
+                </div>
+                <p class="card-text">Engage in interactive learning modules with quizzes, points, and leaderboards.</p>
+                <a href="{{ url_for('learning_module') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right me-1"></i>Start Learning
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skill Gap Analysis -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-puzzle-piece fa-2x text-danger me-3"></i>
+                    <h5 class="card-title mb-0">Skill Gap Analysis</h5>
+                </div>
+                <p class="card-text">Identify skill gaps and get personalized recommendations for career growth.</p>
+                <a href="{{ url_for('skill_gap_analysis') }}" class="btn btn-outline-danger">
+                    <i class="fas fa-arrow-right me-1"></i>Analyze Skills
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wellness Tracker -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-heart fa-2x text-info me-3"></i>
+                    <h5 class="card-title mb-0">Employee Wellness</h5>
+                </div>
+                <p class="card-text">Track employee wellness with conversational check-ins and personalized recommendations.</p>
+                <a href="{{ url_for('wellness_tracker') }}" class="btn btn-outline-info">
+                    <i class="fas fa-arrow-right me-1"></i>Check Wellness
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HR Insights -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="fas fa-chart-bar fa-2x text-secondary me-3"></i>
+                    <h5 class="card-title mb-0">Unified HR Insights</h5>
+                </div>
+                <p class="card-text">Comprehensive analytics dashboard with attendance, engagement, and diversity metrics.</p>
+                <a href="{{ url_for('hr_insights') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-right me-1"></i>View Insights
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+{% if recent_wellness %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-4">Recent Wellness Activity</h3>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Wellness Status</th>
+                                <th>Check Date</th>
+                                <th>Overall Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in recent_wellness %}
+                            <tr>
+                                <td>{{ check.employee.name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if check.overall_wellness == 'green' else ('warning' if check.overall_wellness == 'yellow' else 'danger') }}">
+                                        {{ check.overall_wellness.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ check.check_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-{{ 'success' if check.overall_wellness == 'green' else ('warning' if check.overall_wellness == 'yellow' else 'danger') }}" 
+                                             style="width: {{ ((check.stress_level + check.sleep_quality + check.focus_level) / 30 * 100) }}%">
+                                            {{ "%.1f"|format((check.stress_level + check.sleep_quality + check.focus_level) / 3) }}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

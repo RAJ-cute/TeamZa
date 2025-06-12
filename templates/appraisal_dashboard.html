@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}AI-Driven Appraisal Dashboard - AI-Powered HR Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-clipboard-check me-3"></i>AI-Driven Appraisal Dashboard
+        </h1>
+        <p class="lead text-muted">Analyze performance reviews with sentiment analysis and trend visualization</p>
+    </div>
+</div>
+
+{% if dashboard_data %}
+<!-- Summary Cards -->
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-star fa-2x mb-2"></i>
+                <h3 class="card-title">{{ dashboard_data.avg_rating }}</h3>
+                <p class="card-text">Average Rating</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success">
+            <div class="card-body text-center">
+                <i class="fas fa-smile fa-2x mb-2"></i>
+                <h3 class="card-title">{{ dashboard_data.sentiment_distribution.positive }}</h3>
+                <p class="card-text">Positive Reviews</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-meh fa-2x mb-2"></i>
+                <h3 class="card-title">{{ dashboard_data.sentiment_distribution.neutral }}</h3>
+                <p class="card-text">Neutral Reviews</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-danger">
+            <div class="card-body text-center">
+                <i class="fas fa-frown fa-2x mb-2"></i>
+                <h3 class="card-title">{{ dashboard_data.sentiment_distribution.negative }}</h3>
+                <p class="card-text">Negative Reviews</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-5">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Sentiment Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="sentimentChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Performance Ratings
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ratingsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Performers and Improvement Areas -->
+<div class="row mb-5">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Top Performers
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if dashboard_data.top_performers %}
+                <div class="list-group list-group-flush">
+                    {% for performer in dashboard_data.top_performers %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-warning rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                {{ loop.index }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ performer.name }}</h6>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success fs-6">{{ performer.rating }}/10</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No performance data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Needs Improvement
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if dashboard_data.improvement_needed %}
+                <div class="list-group list-group-flush">
+                    {% for employee in dashboard_data.improvement_needed %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-clock text-warning me-3"></i>
+                            <div>
+                                <h6 class="mb-0">{{ employee.name }}</h6>
+                                <small class="text-muted">Requires attention</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-warning fs-6">{{ employee.rating }}/10</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                    <p class="text-muted">All employees performing well!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Reviews -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>Recent Performance Reviews
+                </h5>
+                <span class="badge bg-info">{{ reviews|length }} Total Reviews</span>
+            </div>
+            <div class="card-body">
+                {% if reviews %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Review Period</th>
+                                <th>Overall Rating</th>
+                                <th>Sentiment Score</th>
+                                <th>Review Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in reviews[:10] %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/32x32/007bff/ffffff?text={{ review.employee.name[0] }}" 
+                                             class="rounded-circle me-2" alt="Avatar">
+                                        <div>
+                                            <div class="fw-bold">{{ review.employee.name }}</div>
+                                            <small class="text-muted">{{ review.employee.department }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ review.review_period }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ review.overall_rating }}/10</span>
+                                        <div class="progress" style="width: 60px; height: 8px;">
+                                            <div class="progress-bar bg-{% if review.overall_rating >= 8 %}success{% elif review.overall_rating >= 6 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ review.overall_rating * 10 }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if review.sentiment_score >= 7 %}success{% elif review.sentiment_score >= 4 %}warning{% else %}danger{% endif %}">
+                                        {{ review.sentiment_score }}/10
+                                    </span>
+                                </td>
+                                <td>{{ review.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal{{ loop.index }}">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Review Detail Modal -->
+                            <div class="modal fade" id="reviewModal{{ loop.index }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                Performance Review - {{ review.employee.name }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <strong>Employee:</strong> {{ review.employee.name }}<br>
+                                                    <strong>Department:</strong> {{ review.employee.department }}<br>
+                                                    <strong>Position:</strong> {{ review.employee.position }}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Review Period:</strong> {{ review.review_period }}<br>
+                                                    <strong>Overall Rating:</strong> {{ review.overall_rating }}/10<br>
+                                                    <strong>Sentiment Score:</strong> {{ review.sentiment_score }}/10
+                                                </div>
+                                            </div>
+                                            
+                                            <h6>Review Feedback:</h6>
+                                            <div class="bg-light p-3 rounded">
+                                                {{ review.feedback }}
+                                            </div>
+                                            
+                                            <div class="mt-3">
+                                                <h6>AI Sentiment Analysis:</h6>
+                                                <div class="progress mb-2" style="height: 25px;">
+                                                    <div class="progress-bar bg-{% if review.sentiment_score >= 7 %}success{% elif review.sentiment_score >= 4 %}warning{% else %}danger{% endif %}" 
+                                                         style="width: {{ review.sentiment_score * 10 }}%">
+                                                        {{ review.sentiment_score }}/10 - 
+                                                        {% if review.sentiment_score >= 7 %}
+                                                        Positive
+                                                        {% elif review.sentiment_score >= 4 %}
+                                                        Neutral
+                                                        {% else %}
+                                                        Negative
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary">
+                                                <i class="fas fa-edit me-1"></i>Edit Review
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-4x text-muted mb-4"></i>
+                    <h4>No Performance Reviews Found</h4>
+                    <p class="text-muted mb-4">
+                        Get started by initializing some sample performance review data.
+                    </p>
+                    <a href="{{ url_for('initialize_data') }}" class="btn btn-primary">
+                        <i class="fas fa-database me-2"></i>Initialize Sample Data
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if dashboard_data %}
+<script>
+// Sentiment Distribution Chart
+const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+const sentimentData = {{ dashboard_data.sentiment_distribution | tojsonfilter | safe }};
+
+new Chart(sentimentCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+            data: [sentimentData.positive, sentimentData.neutral, sentimentData.negative],
+            backgroundColor: [
+                '#28a745',
+                '#ffc107',
+                '#dc3545'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        }
+    }
+});
+
+// Performance Ratings Chart
+const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+const reviews = {{ reviews | tojsonfilter | safe }};
+
+// Group ratings by range
+const ratingRanges = {
+    'Excellent (9-10)': reviews.filter(r => r.overall_rating >= 9).length,
+    'Good (7-8)': reviews.filter(r => r.overall_rating >= 7 && r.overall_rating < 9).length,
+    'Average (5-6)': reviews.filter(r => r.overall_rating >= 5 && r.overall_rating < 7).length,
+    'Below Average (<5)': reviews.filter(r => r.overall_rating < 5).length
+};
+
+new Chart(ratingsCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(ratingRanges),
+        datasets: [{
+            label: 'Number of Reviews',
+            data: Object.values(ratingRanges),
+            backgroundColor: [
+                '#28a745',
+                '#17a2b8',
+                '#ffc107',
+                '#dc3545'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
