@@ -4,6 +4,9 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from models import Employee, LearningProgress, WellnessCheck, PerformanceReview
 
+import random
+from datetime import datetime, timedelta
+
 class HRAnalytics:
     """HR Analytics processor for various HR insights"""
     
@@ -38,6 +41,152 @@ class HRAnalytics:
             initiative_score * self.leadership_weights['initiative_taking'] +
             communication_score * self.leadership_weights['communication_skills']
         )
+        
+        return round(potential_score, 2)
+    
+    def suggest_growth_actions(self, employee, potential_score):
+        """Suggest growth actions for employee development"""
+        actions = []
+        
+        if potential_score >= 8.5:
+            actions = [
+                "Consider for senior leadership roles",
+                "Assign high-impact strategic projects",
+                "Provide executive coaching",
+                "Cross-functional leadership opportunities"
+            ]
+        elif potential_score >= 7.5:
+            actions = [
+                "Team lead opportunities",
+                "Management training programs",
+                "Mentoring junior employees",
+                "Project management certification"
+            ]
+        else:
+            actions = [
+                "Leadership skills workshop",
+                "Communication training",
+                "Performance improvement plan",
+                "Peer feedback sessions"
+            ]
+        
+        return actions
+    
+    def generate_performance_review_with_reviewer(self, employee, manager_rating, reviewers, reviewer_usage):
+        """Generate performance review with reviewer assignment"""
+        # Select reviewer ensuring each is used at least once
+        min_usage = min(reviewer_usage.values())
+        available_reviewers = [r for r in reviewers if reviewer_usage[r] == min_usage]
+        selected_reviewer = random.choice(available_reviewers)
+        reviewer_usage[selected_reviewer] += 1
+        
+        # Generate star rating based on manager rating
+        star_rating = max(1, min(5, round(manager_rating / 2)))
+        
+        # Generate review text based on rating
+        if manager_rating >= 9.0:
+            reviews = [
+                f"{employee.name} consistently exceeds expectations and demonstrates exceptional leadership qualities. Outstanding performance across all metrics.",
+                f"Exceptional contributor! {employee.name} shows remarkable initiative and consistently delivers high-quality results.",
+                f"{employee.name} is a top performer who consistently goes above and beyond. Excellent leadership potential."
+            ]
+        elif manager_rating >= 7.5:
+            reviews = [
+                f"{employee.name} demonstrates solid performance and good teamwork. Shows potential for growth in leadership roles.",
+                f"Good performer with consistent results. {employee.name} would benefit from additional leadership development opportunities.",
+                f"{employee.name} meets expectations well and shows initiative. Ready for increased responsibilities."
+            ]
+        elif manager_rating >= 6.0:
+            reviews = [
+                f"{employee.name} shows adequate performance but needs improvement in key areas. Recommend focused development plan.",
+                f"Average performance with room for improvement. {employee.name} would benefit from additional training and support.",
+                f"{employee.name} meets basic requirements but lacks consistency. Needs mentoring and skill development."
+            ]
+        else:
+            reviews = [
+                f"{employee.name} requires significant improvement in performance and professional development. Recommend immediate action plan.",
+                f"Below expectations. {employee.name} needs intensive support and clear performance improvement goals.",
+                f"Performance issues need immediate attention. {employee.name} requires comprehensive development intervention."
+            ]
+        
+        selected_review = random.choice(reviews)
+        
+        return {
+            'review': selected_review,
+            'reviewer': selected_reviewer,
+            'star_rating': star_rating
+        }
+    
+    def calculate_wellness_score(self, stress_level, sleep_quality, focus_level):
+        """Calculate overall wellness score"""
+        # Convert to positive scale (10 is best for sleep and focus, 1 is best for stress)
+        stress_positive = 11 - stress_level
+        wellness_score = (stress_positive + sleep_quality + focus_level) / 3
+        return round(wellness_score, 1)
+    
+    def get_wellness_status(self, wellness_score):
+        """Get wellness status based on score"""
+        if wellness_score >= 8:
+            return 'green'
+        elif wellness_score >= 6:
+            return 'yellow'
+        else:
+            return 'red'
+    
+    def get_wellness_recommendations(self, status, stress_level, sleep_quality, focus_level):
+        """Get wellness recommendations based on metrics"""
+        recommendations = []
+        
+        if stress_level >= 8:
+            recommendations.append("Consider stress management techniques like meditation or yoga")
+        if sleep_quality <= 4:
+            recommendations.append("Improve sleep hygiene and consider sleep quality assessment")
+        if focus_level <= 4:
+            recommendations.append("Take regular breaks and consider focus enhancement techniques")
+        
+        if status == 'red':
+            recommendations.append("Recommend immediate wellness intervention")
+        elif status == 'yellow':
+            recommendations.append("Monitor wellness metrics closely")
+        
+        return recommendations
+    
+    def analyze_employee_skill_gaps(self, employee):
+        """Analyze skill gaps for an employee"""
+        return {
+            'employee_name': employee.name,
+            'current_skills': employee.skills or "General skills",
+            'skill_gaps': employee.skill_gaps or "No specific gaps identified",
+            'recommendations': [
+                "Continue professional development",
+                "Attend relevant training programs",
+                "Seek mentorship opportunities"
+            ]
+        }
+    
+    def generate_hr_insights(self):
+        """Generate comprehensive HR insights"""
+        return {
+            'total_insights': 5,
+            'key_metrics': ['Performance', 'Wellness', 'Skills', 'Leadership'],
+            'recommendations': ['Increase training', 'Improve wellness programs']
+        }
+    
+    def generate_appraisal_insights(self, reviews):
+        """Generate appraisal dashboard insights"""
+        return {
+            'total_reviews': len(reviews),
+            'average_rating': sum(r.overall_rating for r in reviews) / len(reviews) if reviews else 0,
+            'sentiment_distribution': {'positive': 60, 'neutral': 30, 'negative': 10}
+        }
+    
+    def get_learning_leaderboard(self):
+        """Get learning leaderboard data"""
+        return [
+            {'name': 'John Doe', 'score': 95, 'modules': 8},
+            {'name': 'Jane Smith', 'score': 89, 'modules': 7},
+            {'name': 'Mike Johnson', 'score': 82, 'modules': 6}
+        ]
         
         return round(potential_score, 2)
     

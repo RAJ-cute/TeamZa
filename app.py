@@ -44,7 +44,33 @@ app.jinja_env.filters['from_json'] = from_json
 # Add custom template filters
 @app.template_filter('tojsonfilter')
 def tojson_filter(obj):
-    return json.dumps(obj)
+    def serialize_obj(item):
+        if hasattr(item, '__dict__'):
+            # SQLAlchemy object - convert to dict
+            result = {}
+            for key, value in item.__dict__.items():
+                if not key.startswith('_'):
+                    if hasattr(value, '__dict__'):
+                        result[key] = serialize_obj(value)
+                    elif isinstance(value, (list, tuple)):
+                        result[key] = [serialize_obj(v) if hasattr(v, '__dict__') else v for v in value]
+                    elif isinstance(value, datetime):
+                        result[key] = value.isoformat() if value else None
+                    else:
+                        result[key] = value
+            return result
+        elif isinstance(item, (list, tuple)):
+            return [serialize_obj(v) for v in item]
+        elif isinstance(item, dict):
+            return {k: serialize_obj(v) for k, v in item.items()}
+        else:
+            return item
+    
+    try:
+        serialized = serialize_obj(obj)
+        return json.dumps(serialized)
+    except Exception as e:
+        return json.dumps({})
 
 # Add global template functions
 @app.template_global()

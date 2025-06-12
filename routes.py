@@ -207,8 +207,22 @@ def leadership_potential():
                 employee, manager_rating, reviewers, reviewer_usage
             )
             
+            # Serialize employee data
+            employee_data = {
+                'id': employee.id,
+                'name': employee.name,
+                'email': employee.email,
+                'department': employee.department,
+                'position': employee.position,
+                'hire_date': employee.hire_date.isoformat() if employee.hire_date else None,
+                'performance_score': employee.performance_score,
+                'manager_rating': employee.manager_rating,
+                'experience_years': employee.experience_years,
+                'skills': employee.skills
+            }
+            
             leadership_candidates.append({
-                'employee': employee,
+                'employee': employee_data,
                 'potential_score': potential_score,
                 'growth_actions': growth_actions,
                 'review': review_data['review'],
