@@ -136,7 +136,13 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <small class="text-muted">Hire Date:</small>
-                        <div class="small">{{ candidate.employee.hire_date.strftime('%B %Y') if candidate.employee.hire_date else 'N/A' }}</div>
+                        <div class="small">
+                            {% if candidate.employee.hire_date %}
+                                {{ candidate.employee.hire_date.strftime('%B %Y') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
                         <small class="text-muted">Experience:</small>
                         <div class="small">{{ candidate.employee.experience_years or 0 }} years</div>
                     </div>
@@ -166,6 +172,13 @@
                                 <li><strong>Department:</strong> {{ candidate.employee.department }}</li>
                                 <li><strong>Position:</strong> {{ candidate.employee.position }}</li>
                                 <li><strong>Potential Score:</strong> {{ candidate.potential_score }}/10</li>
+                                <li><strong>Hire Date:</strong> 
+                                    {% if candidate.employee.hire_date %}
+                                        {{ candidate.employee.hire_date.strftime('%B %Y') }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </li>
                                 <li><strong>Manager Rating:</strong> 
                                     {% for i in range(candidate.star_rating) %}
                                     <i class="fas fa-star text-warning"></i>

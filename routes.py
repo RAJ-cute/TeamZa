@@ -214,7 +214,7 @@ def leadership_potential():
                 'email': employee.email,
                 'department': employee.department,
                 'position': employee.position,
-                'hire_date': employee.hire_date.isoformat() if employee.hire_date else None,
+                'hire_date': employee.hire_date,  # Keep as datetime object
                 'performance_score': employee.performance_score,
                 'manager_rating': employee.manager_rating,
                 'experience_years': employee.experience_years,
