@@ -33,9 +33,10 @@ def from_json(value):
     try:
         import json
         return json.loads(value) if value else []
-    except:
+    except (json.JSONDecodeError, TypeError, ValueError):
         return []
 
+# Register the filter after app initialization
 app.jinja_env.filters['from_json'] = from_json
 
 with app.app_context():

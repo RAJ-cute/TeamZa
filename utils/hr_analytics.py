@@ -285,7 +285,7 @@ class HRAnalytics:
         # Learning engagement
         learning_completion = db.session.query(
             db.func.count(LearningProgress.id).label('total'),
-            db.func.sum(db.case((LearningProgress.completed == True, 1), else_=0)).label('completed')
+            db.func.sum(db.case([(LearningProgress.completed == True, 1)], else_=0)).label('completed')
         ).first()
         
         completion_rate = (learning_completion.completed / learning_completion.total * 100) if learning_completion.total else 0

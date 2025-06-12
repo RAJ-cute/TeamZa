@@ -4,7 +4,11 @@ from models import Employee, Resume, LearningProgress, WellnessCheck, Performanc
 from utils.nlp_processor import NLPProcessor
 from utils.hr_analytics import HRAnalytics
 from data.mock_data import MockDataGenerator
-from data.real_data_loader import RealDataLoader
+try:
+    from data.real_data_loader import RealDataLoader
+except ImportError as e:
+    print(f"Warning: Could not import RealDataLoader: {e}")
+    RealDataLoader = None
 import json
 import os
 from werkzeug.utils import secure_filename
@@ -13,7 +17,7 @@ from datetime import datetime
 nlp_processor = NLPProcessor()
 hr_analytics = HRAnalytics()
 mock_data = MockDataGenerator()
-real_data_loader = RealDataLoader()
+real_data_loader = RealDataLoader() if RealDataLoader else None
 
 @app.route('/')
 def index():
@@ -342,6 +346,10 @@ def initialize_data():
 @app.route('/initialize-real-data')
 def initialize_real_data():
     """Initialize database with real employee data from uploaded files"""
+    if not real_data_loader:
+        flash('Real data loader not available. Please install required dependencies.', 'error')
+        return redirect(url_for('index'))
+    
     try:
         # Clear existing data
         Resume.query.delete()
