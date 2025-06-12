@@ -185,16 +185,35 @@ def leadership_potential():
     # Get all employees with performance data
     employees = Employee.query.all()
 
+    # Review givers
+    reviewers = [
+        "Mr. Prabhu Narayan (Team Lead)",
+        "Ms. Dhruti Chand (Managing Director)", 
+        "Ms. Pratibha Sharma (Recruitment Officer)"
+    ]
+    
     # Analyze leadership potential
     leadership_candidates = []
+    reviewer_usage = {reviewer: 0 for reviewer in reviewers}
+    
     for employee in employees:
         potential_score = hr_analytics.calculate_leadership_potential(employee)
         if potential_score > 7.0:  # High potential threshold
             growth_actions = hr_analytics.suggest_growth_actions(employee, potential_score)
+            
+            # Generate review based on manager rating
+            manager_rating = employee.manager_rating or 7.0
+            review_data = hr_analytics.generate_performance_review_with_reviewer(
+                employee, manager_rating, reviewers, reviewer_usage
+            )
+            
             leadership_candidates.append({
                 'employee': employee,
                 'potential_score': potential_score,
-                'growth_actions': growth_actions
+                'growth_actions': growth_actions,
+                'review': review_data['review'],
+                'reviewer': review_data['reviewer'],
+                'star_rating': review_data['star_rating']
             })
 
     # Sort by potential score

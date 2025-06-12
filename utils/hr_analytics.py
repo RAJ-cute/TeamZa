@@ -426,6 +426,53 @@ class HRAnalytics:
         
         return recommendations
 
+    def generate_performance_review_with_reviewer(self, employee, manager_rating, reviewers, reviewer_usage):
+        """Generate performance review with assigned reviewer based on manager rating"""
+        import random
+        
+        # Assign reviewer ensuring each is used at least once
+        min_usage = min(reviewer_usage.values())
+        available_reviewers = [r for r, count in reviewer_usage.items() if count == min_usage]
+        selected_reviewer = random.choice(available_reviewers)
+        reviewer_usage[selected_reviewer] += 1
+        
+        # Convert manager rating to star rating (1-5 scale)
+        star_rating = max(1, min(5, round(manager_rating / 2)))
+        
+        # Generate review based on manager rating
+        if manager_rating >= 9.0:
+            reviews = [
+                f"{employee.name} is an exceptional performer who consistently exceeds expectations. Their leadership qualities shine through in every project, and they serve as a role model for the entire team. Outstanding problem-solving skills and innovative thinking make them invaluable to our organization.",
+                f"I am thoroughly impressed with {employee.name}'s performance. They demonstrate remarkable initiative, excellent communication skills, and the ability to drive results even in challenging situations. Their collaborative approach and mentorship of junior colleagues is exemplary.",
+                f"{employee.name} has shown exceptional growth and leadership potential. Their strategic thinking, combined with excellent execution skills, makes them a standout performer. They consistently deliver high-quality work while maintaining team morale and productivity."
+            ]
+        elif manager_rating >= 8.0:
+            reviews = [
+                f"{employee.name} is a high-performing team member who consistently delivers quality work. They show strong leadership potential and are well-respected by their peers. Their technical skills and professional demeanor make them a valuable asset to the team.",
+                f"I'm pleased with {employee.name}'s performance this period. They demonstrate good problem-solving abilities and take initiative when needed. Their positive attitude and willingness to help others contributes significantly to team success.",
+                f"{employee.name} has shown solid performance with consistent results. They handle responsibilities well and show good potential for advancement. Their collaborative spirit and technical competency are noteworthy strengths."
+            ]
+        elif manager_rating >= 7.0:
+            reviews = [
+                f"{employee.name} meets expectations in most areas of their role. They show good technical competency and are reliable in completing assigned tasks. There are opportunities for growth in leadership and taking more initiative on projects.",
+                f"Overall, {employee.name} performs adequately in their current role. They demonstrate good collaboration skills and meet deadlines consistently. Areas for improvement include taking more ownership of projects and developing stronger communication skills.",
+                f"{employee.name} is a steady contributor who handles routine responsibilities well. They show potential for growth and would benefit from additional training in leadership and strategic thinking to advance their career."
+            ]
+        else:
+            reviews = [
+                f"{employee.name}'s performance has been below expectations in several key areas. They need to focus on improving work quality, meeting deadlines, and taking more initiative. A performance improvement plan would be beneficial.",
+                f"There are significant areas where {employee.name} needs improvement. Issues with project completion and communication need immediate attention. Additional training and closer supervision are recommended.",
+                f"{employee.name} is struggling to meet the basic requirements of their role. Performance issues need to be addressed through targeted development programs and regular feedback sessions."
+            ]
+        
+        selected_review = random.choice(reviews)
+        
+        return {
+            'review': selected_review,
+            'reviewer': selected_reviewer,
+            'star_rating': star_rating
+        }
+
     def generate_hr_insights(self):
         """Generate comprehensive HR insights"""
         from app import db

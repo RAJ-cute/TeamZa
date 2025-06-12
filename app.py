@@ -4,6 +4,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+import json
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -39,21 +41,31 @@ def from_json(value):
 # Register the filter after app initialization
 app.jinja_env.filters['from_json'] = from_json
 
+# Add custom template filters
+@app.template_filter('tojsonfilter')
+def tojson_filter(obj):
+    return json.dumps(obj)
+
+# Add global template functions
+@app.template_global()
+def now():
+    return datetime.now()
+
 with app.app_context():
     # Import models first
     import models  # noqa: F401
-    
+
     # Ensure clean database creation
     try:
         db.drop_all()
         print("Dropped all existing tables")
     except Exception as e:
         print(f"Drop tables warning: {e}")
-    
+
     # Create all tables with proper schema
     db.create_all()
     print("Database tables created successfully!")
-    
+
     # Verify the Employee table has the correct columns
     from sqlalchemy import inspect
     inspector = inspect(db.engine)
