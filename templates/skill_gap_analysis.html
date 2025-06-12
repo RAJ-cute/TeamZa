@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Skill Gap Analysis - AI-Powered HR Platform{% endblock %}
+{% block title %}Employee Skill Gap Analysis - AI-Powered HR Platform{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <h1 class="display-5 mb-4">
-            <i class="fas fa-puzzle-piece me-3"></i>Skill Gap Analysis
+            <i class="fas fa-user-chart me-3"></i>Employee Skill Gap Analysis
         </h1>
-        <p class="lead text-muted">Identify skill gaps and get personalized recommendations for career growth</p>
+        <p class="lead text-muted">Analyze individual employee skill gaps and get personalized upskilling recommendations</p>
     </div>
 </div>
 
@@ -17,43 +17,23 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-user-check me-2"></i>Skills Assessment
+                    <i class="fas fa-user-search me-2"></i>Employee Selection
                 </h5>
             </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="mb-4">
-                        <label for="target_role" class="form-label">Target Role</label>
-                        <select class="form-select" id="target_role" name="target_role" required>
-                            <option value="">Select your desired role</option>
-                            {% for role in target_roles %}
-                            <option value="{{ role }}" {% if role == target_role %}selected{% endif %}>{{ role }}</option>
+                        <label for="employee_name" class="form-label">Select Employee</label>
+                        <select class="form-select" id="employee_name" name="employee_name" required>
+                            <option value="">Choose an employee to analyze</option>
+                            {% for employee in employees %}
+                            <option value="{{ employee.name }}" {% if employee.name == selected_employee %}selected{% endif %}>
+                                {{ employee.name }} - {{ employee.position }} ({{ employee.department }})
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label">Current Skills</label>
-                        <p class="text-muted small mb-3">Select all skills you currently possess</p>
-                        <div class="row">
-                            {% for category, skills in available_skills.items() %}
-                            <div class="col-md-6 mb-3">
-                                <h6 class="text-primary">{{ category.replace('_', ' ').title() }}</h6>
-                                {% for skill in skills %}
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="current_skills" value="{{ skill }}" 
-                                           id="skill_{{ loop.index0 }}_{{ loop.index0 }}"
-                                           {% if skill in current_skills %}checked{% endif %}>
-                                    <label class="form-check-label" for="skill_{{ loop.index0 }}_{{ loop.index0 }}">
-                                        {{ skill.title() }}
-                                    </label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
+
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-search me-2"></i>Analyze Skill Gaps
                     </button>
@@ -61,132 +41,105 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
                 <h6 class="mb-0">
-                    <i class="fas fa-lightbulb me-2"></i>How It Works
+                    <i class="fas fa-info-circle me-2"></i>How It Works
                 </h6>
             </div>
             <div class="card-body">
                 <div class="d-flex mb-3">
                     <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">1</div>
                     <div>
-                        <strong>Select Target Role</strong><br>
-                        <small class="text-muted">Choose the position you want to advance to</small>
+                        <strong>Select Employee</strong><br>
+                        <small class="text-muted">Choose the employee you want to analyze</small>
                     </div>
                 </div>
                 <div class="d-flex mb-3">
                     <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">2</div>
                     <div>
-                        <strong>Current Skills</strong><br>
-                        <small class="text-muted">Mark all the skills you currently have</small>
+                        <strong>View Skill Gaps</strong><br>
+                        <small class="text-muted">See identified skill gaps for their role</small>
                     </div>
                 </div>
                 <div class="d-flex mb-3">
                     <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">3</div>
                     <div>
-                        <strong>Get Recommendations</strong><br>
-                        <small class="text-muted">Receive personalized learning paths</small>
+                        <strong>Get Course Links</strong><br>
+                        <small class="text-muted">Access direct links to upskilling courses</small>
                     </div>
                 </div>
-                
+
                 <hr class="my-4">
-                
-                <h6 class="mb-3">Popular Target Roles:</h6>
-                <div class="d-flex flex-wrap gap-2">
-                    {% for role in target_roles[:4] %}
-                    <span class="badge bg-outline-secondary">{{ role }}</span>
-                    {% endfor %}
+
+                <h6 class="mb-3">Total Employees:</h6>
+                <div class="text-center">
+                    <span class="badge bg-info fs-6">{{ employees|length }}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{% if gap_analysis %}
+{% if employee_analysis %}
 <div class="row mt-5">
     <div class="col-12">
         <h3 class="mb-4">
-            <i class="fas fa-chart-line me-2"></i>Analysis Results for {{ target_role }}
+            <i class="fas fa-user me-2"></i>Analysis for {{ employee_analysis.employee.name }}
         </h3>
     </div>
 </div>
 
-<!-- Match Summary -->
+<!-- Employee Information -->
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
-        <div class="card bg-success">
+        <div class="card bg-primary text-white">
             <div class="card-body text-center">
-                <i class="fas fa-check-circle fa-2x mb-2"></i>
-                <h3 class="card-title">{{ gap_analysis.matching_skills|length }}</h3>
-                <p class="card-text">Skills You Have</p>
+                <i class="fas fa-id-badge fa-2x mb-2"></i>
+                <h5 class="card-title">{{ employee_analysis.employee.position }}</h5>
+                <p class="card-text">{{ employee_analysis.employee.department }}</p>
             </div>
         </div>
     </div>
     <div class="col-md-4 mb-3">
-        <div class="card bg-warning">
+        <div class="card bg-info text-white">
             <div class="card-body text-center">
-                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                <h3 class="card-title">{{ gap_analysis.skill_gaps|length }}</h3>
-                <p class="card-text">Skills to Learn</p>
+                <i class="fas fa-star fa-2x mb-2"></i>
+                <h3 class="card-title">{{ "%.1f"|format(employee_analysis.employee.manager_rating or 0) }}</h3>
+                <p class="card-text">Manager Rating</p>
             </div>
         </div>
     </div>
     <div class="col-md-4 mb-3">
-        <div class="card bg-info">
+        <div class="card bg-success text-white">
             <div class="card-body text-center">
-                <i class="fas fa-percentage fa-2x mb-2"></i>
-                <h3 class="card-title">{{ "%.0f"|format(gap_analysis.match_percentage) }}%</h3>
-                <p class="card-text">Match Score</p>
+                <i class="fas fa-calendar fa-2x mb-2"></i>
+                <h3 class="card-title">{{ employee_analysis.employee.experience_years or 'N/A' }}</h3>
+                <p class="card-text">Years Experience</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Skills Breakdown -->
+<!-- Skill Gaps Analysis -->
 <div class="row">
-    <div class="col-lg-6 mb-4">
+    <div class="col-12 mb-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-check-circle text-success me-2"></i>Skills You Have
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>Identified Skill Gaps
                 </h5>
             </div>
             <div class="card-body">
-                {% if gap_analysis.matching_skills %}
-                <div class="d-flex flex-wrap gap-2">
-                    {% for skill in gap_analysis.matching_skills %}
-                    <span class="badge bg-success">{{ skill.title() }}</span>
-                    {% endfor %}
+                {% if employee_analysis.skill_gaps %}
+                <div class="alert alert-warning">
+                    <strong>Skills to develop:</strong> {{ employee_analysis.skill_gaps }}
                 </div>
                 {% else %}
-                <p class="text-muted text-center py-3">No matching skills found</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-times-circle text-warning me-2"></i>Skills to Develop
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if gap_analysis.skill_gaps %}
-                <div class="d-flex flex-wrap gap-2">
-                    {% for skill in gap_analysis.skill_gaps %}
-                    <span class="badge bg-warning">{{ skill.title() }}</span>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="text-center py-3">
-                    <i class="fas fa-trophy text-success fa-3x mb-3"></i>
-                    <h6 class="text-success">Perfect Match!</h6>
-                    <p class="text-muted">You have all the required skills for this role.</p>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>No specific skill gaps identified for this employee.
                 </div>
                 {% endif %}
             </div>
@@ -194,137 +147,96 @@
     </div>
 </div>
 
-<!-- Learning Recommendations -->
-{% if gap_analysis.recommendations %}
+<!-- Course Recommendations -->
+{% if employee_analysis.course_recommendations %}
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-graduation-cap me-2"></i>Personalized Learning Recommendations
+                    <i class="fas fa-graduation-cap me-2"></i>Personalized Course Recommendations
                 </h5>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Skill</th>
-                                <th>Priority</th>
-                                <th>Learning Resources</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for recommendation in gap_analysis.recommendations %}
-                            <tr>
-                                <td>
-                                    <strong>{{ recommendation.skill.title() }}</strong>
-                                </td>
-                                <td>
-                                    <span class="badge bg-{% if recommendation.urgency == 'High' %}danger{% elif recommendation.urgency == 'Medium' %}warning{% else %}info{% endif %}">
-                                        {{ recommendation.urgency }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <ul class="list-unstyled mb-0">
-                                        {% for resource in recommendation.resources[:2] %}
-                                        <li class="small">
-                                            <i class="fas fa-book me-1 text-primary"></i>{{ resource }}
-                                        </li>
-                                        {% endfor %}
-                                        {% if recommendation.resources|length > 2 %}
-                                        <li class="small text-muted">+{{ recommendation.resources|length - 2 }} more</li>
-                                        {% endif %}
-                                    </ul>
-                                </td>
-                                <td>
-                                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#resourceModal{{ loop.index }}">
-                                        <i class="fas fa-external-link-alt me-1"></i>View All
-                                    </button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Resource Detail Modal -->
-                            <div class="modal fade" id="resourceModal{{ loop.index }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Learning Resources: {{ recommendation.skill.title() }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <span class="badge bg-{% if recommendation.urgency == 'High' %}danger{% elif recommendation.urgency == 'Medium' %}warning{% else %}info{% endif %} mb-2">
-                                                    {{ recommendation.urgency }} Priority
-                                                </span>
-                                            </div>
-                                            <h6>Recommended Resources:</h6>
-                                            <ul class="list-group list-group-flush">
-                                                {% for resource in recommendation.resources %}
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    {{ resource }}
-                                                    <i class="fas fa-external-link-alt text-primary"></i>
-                                                </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <button type="button" class="btn btn-primary">
-                                                <i class="fas fa-plus me-1"></i>Add to Learning Plan
-                                            </button>
-                                        </div>
-                                    </div>
+                {% for skill, courses in employee_analysis.course_recommendations.items() %}
+                <div class="mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-bullseye me-2"></i>Courses for {{ skill }}
+                    </h6>
+                    <div class="row">
+                        {% for course in courses %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-left-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ course.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i class="fas fa-laptop me-1"></i>{{ course.platform }}
+                                        </small>
+                                    </p>
+                                    <a href="{{ course.url }}" target="_blank" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>Start Course
+                                    </a>
                                 </div>
                             </div>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
+                {% if not loop.last %}
+                <hr>
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- Progress Visualization -->
+<!-- Progress Tracking -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-chart-pie me-2"></i>Skill Development Progress
+                    <i class="fas fa-chart-line me-2"></i>Development Action Plan
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h6>Overall Readiness for {{ target_role }}</h6>
-                        <div class="progress mb-3" style="height: 30px;">
-                            <div class="progress-bar bg-{% if gap_analysis.match_percentage >= 80 %}success{% elif gap_analysis.match_percentage >= 60 %}info{% elif gap_analysis.match_percentage >= 40 %}warning{% else %}danger{% endif %}" 
-                                 style="width: {{ gap_analysis.match_percentage }}%">
-                                {{ "%.0f"|format(gap_analysis.match_percentage) }}% Ready
-                            </div>
-                        </div>
-                        
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <div class="fw-bold text-success">{{ gap_analysis.matching_skills|length }}</div>
-                                <small class="text-muted">Skills Mastered</small>
-                            </div>
-                            <div class="col-4">
-                                <div class="fw-bold text-warning">{{ gap_analysis.skill_gaps|length }}</div>
-                                <small class="text-muted">Skills to Learn</small>
-                            </div>
-                            <div class="col-4">
-                                <div class="fw-bold text-info">{{ gap_analysis.required_skills|length }}</div>
-                                <small class="text-muted">Total Required</small>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Immediate Actions:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Enroll in priority skill courses
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Set up weekly learning schedule
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Track progress with manager
+                            </li>
+                        </ul>
                     </div>
-                    <div class="col-md-4 text-center">
-                        <canvas id="skillsChart" width="200" height="200"></canvas>
+                    <div class="col-md-6">
+                        <h6>Long-term Goals:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-trophy text-warning me-2"></i>
+                                Complete all recommended courses
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-trophy text-warning me-2"></i>
+                                Apply skills in real projects
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-trophy text-warning me-2"></i>
+                                Mentor others in developed skills
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -335,38 +247,16 @@
 {% endblock %}
 
 {% block scripts %}
-{% if gap_analysis %}
 <script>
-// Skills breakdown chart
-const ctx = document.getElementById('skillsChart').getContext('2d');
-const gapAnalysis = {{ gap_analysis | tojsonfilter | safe }};
-
-new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Skills You Have', 'Skills to Learn'],
-        datasets: [{
-            data: [gapAnalysis.matching_skills.length, gapAnalysis.skill_gaps.length],
-            backgroundColor: [
-                '#28a745',
-                '#ffc107'
-            ],
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 15,
-                    usePointStyle: true
-                }
-            }
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // Add search functionality to employee dropdown
+    const employeeSelect = document.getElementById('employee_name');
+    if (employeeSelect) {
+        employeeSelect.addEventListener('change', function() {
+            // Auto-submit form when employee is selected for better UX
+            // this.form.submit();
+        });
     }
 });
 </script>
-{% endif %}
 {% endblock %}

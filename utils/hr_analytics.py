@@ -264,6 +264,168 @@ class HRAnalytics:
         
         return recommendations
     
+    def analyze_employee_skill_gaps(self, employee):
+        """Analyze skill gaps for a specific employee and provide course recommendations"""
+        
+        # Get skill gaps from employee record
+        skill_gaps = employee.skill_gaps or ""
+        skill_gap_list = [s.strip() for s in skill_gaps.split(',') if s.strip()] if skill_gaps else []
+        
+        # Get course recommendations based on job role and skill gaps
+        course_recommendations = self._get_course_recommendations_for_employee(employee.position, skill_gap_list)
+        
+        return {
+            'employee': employee,
+            'skill_gaps': skill_gaps if skill_gaps else None,
+            'skill_gap_list': skill_gap_list,
+            'course_recommendations': course_recommendations
+        }
+    
+    def _get_course_recommendations_for_employee(self, job_role, skill_gaps):
+        """Get course recommendations based on job role and specific skill gaps"""
+        
+        # Course recommendations database
+        course_db = {
+            "Product Manager": {
+                "User Research": [
+                    {"title": "User Research and Design", "platform": "Coursera", "url": "https://www.coursera.org/learn/user-research"},
+                    {"title": "UX Research at Scale: Surveys, Analytics, Online Testing", "platform": "Udemy", "url": "https://www.udemy.com/course/ux-research-at-scale"},
+                    {"title": "User Experience Research and Design Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/user-experience-research-and-design"},
+                    {"title": "User Research for Product Managers", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/user-research-for-product-managers"}
+                ],
+                "Agile": [
+                    {"title": "Agile Development Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/agile-development"},
+                    {"title": "Agile Crash Course: Agile Project Management", "platform": "Udemy", "url": "https://www.udemy.com/course/agile-crash-course"},
+                    {"title": "Agile Meets Design Thinking", "platform": "Coursera", "url": "https://www.coursera.org/learn/agile-meets-design-thinking"},
+                    {"title": "Agile Product Management", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/agile-product-management"}
+                ],
+                "Tech Understanding": [
+                    {"title": "Technology for Product Managers", "platform": "Udemy", "url": "https://www.udemy.com/course/technology-for-product-managers"},
+                    {"title": "Software Product Management Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/product-management"},
+                    {"title": "Technical Product Management", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/technical-product-management"},
+                    {"title": "Product Management for Technical Professionals", "platform": "Udemy", "url": "https://www.udemy.com/course/product-management-for-technical-professionals"}
+                ]
+            },
+            "Sales Executive": {
+                "CRM": [
+                    {"title": "CRM Fundamentals", "platform": "Udemy", "url": "https://www.udemy.com/course/crm-fundamentals"},
+                    {"title": "Salesforce Administrator Certification Training", "platform": "Coursera", "url": "https://www.coursera.org/learn/salesforce-administrator"},
+                    {"title": "HubSpot CRM Implementation", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/hubspot-crm-implementation"},
+                    {"title": "CRM: Customer Relationship Management", "platform": "Udemy", "url": "https://www.udemy.com/course/crm-customer-relationship-management"}
+                ],
+                "Presentation Skills": [
+                    {"title": "Presentation Skills: Speechwriting and Storytelling", "platform": "Udemy", "url": "https://www.udemy.com/course/presentation-skills-speechwriting-and-storytelling"},
+                    {"title": "Successful Presentation", "platform": "Coursera", "url": "https://www.coursera.org/learn/successful-presentation"},
+                    {"title": "Presentation Skills: Designing Presentation Slides", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/presentation-skills-designing-presentation-slides"},
+                    {"title": "The Complete Presentation and Public Speaking Course", "platform": "Udemy", "url": "https://www.udemy.com/course/publicspeaking"}
+                ],
+                "Negotiation": [
+                    {"title": "Successful Negotiation: Essential Strategies and Skills", "platform": "Coursera", "url": "https://www.coursera.org/learn/negotiation-skills"},
+                    {"title": "The Complete Negotiation Skills Masterclass", "platform": "Udemy", "url": "https://www.udemy.com/course/negotiation-skills-masterclass"},
+                    {"title": "Negotiation Skills", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/negotiation-skills"},
+                    {"title": "Sales Negotiation Strategies", "platform": "Udemy", "url": "https://www.udemy.com/course/sales-negotiation-strategies"}
+                ]
+            },
+            "HR Manager": {
+                "Employee Engagement": [
+                    {"title": "Employee Engagement and Retention", "platform": "Udemy", "url": "https://www.udemy.com/course/employee-engagement-and-retention"},
+                    {"title": "HR Analytics: Employee Engagement", "platform": "Coursera", "url": "https://www.coursera.org/learn/hr-analytics-employee-engagement"},
+                    {"title": "Employee Engagement", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/employee-engagement"},
+                    {"title": "The Complete Employee Engagement Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-employee-engagement-course"}
+                ],
+                "HR Analytics": [
+                    {"title": "HR Analytics Using MS Excel for Human Resource Management", "platform": "Udemy", "url": "https://www.udemy.com/course/hr-analytics-using-ms-excel-for-human-resource-management"},
+                    {"title": "People Analytics", "platform": "Coursera", "url": "https://www.coursera.org/learn/people-analytics"},
+                    {"title": "HR Analytics: Building a Data-Driven HR Department", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/hr-analytics-building-a-data-driven-hr-department"},
+                    {"title": "The Complete HR Analytics Course in Excel & R", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-hr-analytics-course-in-excel-r"}
+                ],
+                "Conflict Resolution": [
+                    {"title": "Conflict Resolution Skills", "platform": "Udemy", "url": "https://www.udemy.com/course/conflict-resolution-skills"},
+                    {"title": "Conflict Management Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/conflict-management"},
+                    {"title": "Conflict Resolution Foundations", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/conflict-resolution-foundations"},
+                    {"title": "Workplace Conflict Resolution: A Practical Guide", "platform": "Udemy", "url": "https://www.udemy.com/course/workplace-conflict-resolution"}
+                ],
+                "Talent Management": [
+                    {"title": "Talent Management", "platform": "Coursera", "url": "https://www.coursera.org/learn/talent-management"},
+                    {"title": "Strategic Talent Management", "platform": "Udemy", "url": "https://www.udemy.com/course/strategic-talent-management"},
+                    {"title": "Talent Management", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/talent-management"},
+                    {"title": "The Complete Talent Management Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-talent-management-course"}
+                ]
+            },
+            "Cybersecurity Specialist": {
+                "Ethical Hacking": [
+                    {"title": "Ethical Hacking for Beginners", "platform": "Udemy", "url": "https://www.udemy.com/course/ethical-hacking-for-beginners"},
+                    {"title": "Introduction to Cyber Security Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/intro-cyber-security"},
+                    {"title": "Ethical Hacking: Penetration Testing", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/ethical-hacking-penetration-testing"},
+                    {"title": "The Complete Ethical Hacking Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-ethical-hacking-course"}
+                ],
+                "SIEM": [
+                    {"title": "SIEM for Beginners", "platform": "Udemy", "url": "https://www.udemy.com/course/siem-for-beginners"},
+                    {"title": "Splunk Beginner to Architect", "platform": "Udemy", "url": "https://www.udemy.com/course/splunk-beginner-to-architect"},
+                    {"title": "Security Information and Event Management (SIEM) Foundations", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/security-information-and-event-management-siem-foundations"},
+                    {"title": "The Complete Splunk Beginner Course", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-splunk-beginner-course"}
+                ],
+                "Network Security": [
+                    {"title": "Network Security Fundamentals", "platform": "Udemy", "url": "https://www.udemy.com/course/network-security-fundamentals"},
+                    {"title": "Introduction to Cybersecurity Tools & Cyber Attacks", "platform": "Coursera", "url": "https://www.coursera.org/learn/introduction-cybersecurity-cyber-attacks"},
+                    {"title": "Network Security", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/network-security"},
+                    {"title": "The Complete Cyber Security Course: Network Security", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-internet-security-privacy-course-volume-1"}
+                ]
+            },
+            "Data Analyst": {
+                "SQL": [
+                    {"title": "SQL for Data Science", "platform": "Coursera", "url": "https://www.coursera.org/learn/sql-for-data-science"},
+                    {"title": "The Complete SQL Bootcamp", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-sql-bootcamp"},
+                    {"title": "SQL Essential Training", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/sql-essential-training"},
+                    {"title": "Advanced SQL: MySQL Data Analysis & Business Intelligence", "platform": "Udemy", "url": "https://www.udemy.com/course/advanced-sql-mysql-data-analysis-business-intelligence"}
+                ],
+                "Excel": [
+                    {"title": "Excel Skills for Business Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/excel"},
+                    {"title": "Microsoft Excel - Excel from Beginner to Advanced", "platform": "Udemy", "url": "https://www.udemy.com/course/microsoft-excel-2013-from-beginner-to-advanced-and-beyond"},
+                    {"title": "Excel Essential Training (Office 365/Microsoft 365)", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/excel-essential-training-office-365-microsoft-365"},
+                    {"title": "Microsoft Excel - Data Visualization, Excel Charts & Graphs", "platform": "Udemy", "url": "https://www.udemy.com/course/microsoft-excel-data-visualization-excel-charts-and-graphs"}
+                ],
+                "Data Visualization": [
+                    {"title": "Data Visualization with Tableau Specialization", "platform": "Coursera", "url": "https://www.coursera.org/specializations/data-visualization"},
+                    {"title": "Data Visualization in Python Masterclass", "platform": "Udemy", "url": "https://www.udemy.com/course/data-visualization-in-python"},
+                    {"title": "Learning Data Visualization", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/learning-data-visualization"},
+                    {"title": "The Complete Data Visualization Course with Python, R, Tableau", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-data-visualization-course"}
+                ],
+                "Python": [
+                    {"title": "Python for Data Science and AI", "platform": "Coursera", "url": "https://www.coursera.org/learn/python-for-applied-data-science-ai"},
+                    {"title": "Python for Data Science and Machine Learning Bootcamp", "platform": "Udemy", "url": "https://www.udemy.com/course/python-for-data-science-and-machine-learning-bootcamp"},
+                    {"title": "Python for Data Analysis", "platform": "LinkedIn Learning", "url": "https://www.linkedin.com/learning/python-for-data-analysis"},
+                    {"title": "The Complete Python Course for Data Science and ML", "platform": "Udemy", "url": "https://www.udemy.com/course/the-complete-python-course-for-data-science-and-ml"}
+                ]
+            }
+        }
+        
+        recommendations = {}
+        
+        # Get recommendations for each skill gap
+        if skill_gaps:
+            for skill in skill_gaps:
+                skill_clean = skill.strip()
+                
+                # Look for exact matches first
+                found_courses = None
+                if job_role in course_db:
+                    for course_skill, courses in course_db[job_role].items():
+                        if skill_clean.lower() in course_skill.lower() or course_skill.lower() in skill_clean.lower():
+                            found_courses = courses
+                            break
+                
+                # If exact match not found, provide general courses for the role
+                if not found_courses and job_role in course_db:
+                    # Get first available skill's courses as general recommendations
+                    first_skill = next(iter(course_db[job_role]))
+                    found_courses = course_db[job_role][first_skill]
+                
+                if found_courses:
+                    recommendations[skill_clean] = found_courses
+        
+        return recommendations
+
     def generate_hr_insights(self):
         """Generate comprehensive HR insights"""
         from app import db

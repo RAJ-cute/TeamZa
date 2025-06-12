@@ -238,26 +238,28 @@ def learning_module():
 
 @app.route('/skill-gap-analysis', methods=['GET', 'POST'])
 def skill_gap_analysis():
-    """Skill gap analysis module"""
+    """Employee-based skill gap analysis module"""
+    employees = Employee.query.order_by(Employee.name).all()
+    
     if request.method == 'POST':
-        current_skills = request.form.getlist('current_skills')
-        target_role = request.form.get('target_role')
-
-        # Analyze skill gaps
-        gap_analysis = hr_analytics.analyze_skill_gaps(current_skills, target_role)
-
-        return render_template('skill_gap_analysis.html', 
-                             gap_analysis=gap_analysis,
-                             current_skills=current_skills,
-                             target_role=target_role)
-
-    # Get available skills and roles
-    available_skills = mock_data.get_available_skills()
-    target_roles = mock_data.get_target_roles()
-
-    return render_template('skill_gap_analysis.html', 
-                         available_skills=available_skills,
-                         target_roles=target_roles)
+        employee_name = request.form.get('employee_name')
+        
+        if employee_name:
+            # Find the employee
+            employee = Employee.query.filter_by(name=employee_name).first()
+            
+            if employee:
+                # Analyze skill gaps using the new approach
+                employee_analysis = hr_analytics.analyze_employee_skill_gaps(employee)
+                
+                return render_template('skill_gap_analysis.html', 
+                                     employees=employees,
+                                     employee_analysis=employee_analysis,
+                                     selected_employee=employee_name)
+            else:
+                flash('Employee not found', 'error')
+    
+    return render_template('skill_gap_analysis.html', employees=employees)
 
 @app.route('/wellness-tracker', methods=['GET', 'POST'])
 def wellness_tracker():
