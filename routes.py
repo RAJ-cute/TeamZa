@@ -645,6 +645,23 @@ def employee_insights(employee_id):
     return render_template('employee_insights.html', **employee_data)
 
 @app.route('/api/quiz/<module_name>')
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from app import app, db
+from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview, HRTransaction, EmployeeHistory, CompanyMetrics
+from datetime import datetime
+import data.mock_data as mock_data
+
+try:
+    import data.real_data_loader as real_data_loader
+except ImportError:
+    real_data_loader = None
+
+@app.route('/')
+def index():
+    """Main dashboard"""
+    return render_template('index.html')
+
+@app.route('/api/quiz/<module_name>')
 def get_quiz(module_name):
     """API endpoint to get quiz data"""
     quiz_data = mock_data.get_quiz_data(module_name)
