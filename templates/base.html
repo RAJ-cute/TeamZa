@@ -1,16 +1,19 @@
 
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TeamZa - HR Management Platform{% endblock %}</title>
 
-    <!-- Bootstrap CSS (Replit Dark Theme) -->
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,133 +21,143 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" style="height: 50px; width: auto; margin-right: 15px;" onerror="this.style.display='none';">
-                <span style="font-weight: bold; font-size: 1.5rem;">TeamZa</span>
-            </a>
+<body class="modern-layout">
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="navbar-container">
+            <!-- Logo and Brand -->
+            <div class="navbar-brand-section">
+                <img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" class="brand-logo">
+                <span class="brand-text">TeamZa</span>
+            </div>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Search Bar -->
+            <div class="navbar-search">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Search employees, reports..." class="search-input">
+                </div>
+            </div>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hr_command_center') }}">
-                            <i class="fas fa-rocket me-1"></i>Command Center
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-home me-1"></i>HR Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('employee_management') }}">
-                            <i class="fas fa-users me-1"></i>Employee Management
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="recruitmentDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-plus me-1"></i>Recruitment
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('resume_screening') }}">
-                                <i class="fas fa-file-alt me-2"></i>Resume Screening
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('talent_sourcing') }}">
-                                <i class="fas fa-search me-2"></i>Talent Sourcing
-                            </a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="performanceDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-chart-line me-1"></i>Performance
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('leadership_potential') }}">
-                                <i class="fas fa-crown me-2"></i>Leadership Potential
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('appraisal_dashboard') }}">
-                                <i class="fas fa-clipboard-check me-2"></i>Appraisal Dashboard
-                            </a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="developmentDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-graduation-cap me-1"></i>Development
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('learning_module') }}">
-                                <i class="fas fa-book me-2"></i>Employee Learning
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('skill_gap_analysis') }}">
-                                <i class="fas fa-puzzle-piece me-2"></i>Skill Gap Analysis
-                            </a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('wellness_tracker') }}">
-                            <i class="fas fa-heart me-1"></i>Employee Wellness
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hr_insights') }}">
-                            <i class="fas fa-chart-line"></i> HR Insights
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('gamification') }}">
-                            <i class="fas fa-trophy me-1"></i>🎮 Gamification
-                        </a>
-                    </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('hr_data_management') }}">
-                                <i class="fas fa-database"></i> HR Data Management
-                            </a>
-                        </li>
-                </ul>
-
-                <div class="navbar-nav">
-                    <a class="nav-link" href="{{ url_for('reset_data') }}">
-                        <i class="fas fa-database me-1"></i>Reset Data
-                    </a>
+            <!-- User Actions -->
+            <div class="navbar-actions">
+                <button class="action-btn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="action-btn" title="Messages">
+                    <i class="fas fa-envelope"></i>
+                </button>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=HR+Admin&background=667eea&color=fff" alt="Profile" class="profile-avatar">
+                    <span class="profile-name">HR Admin</span>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Flash Messages -->
-    <div class="container mt-3">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h6 class="sidebar-title">Navigation</h6>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}" class="nav-item active">
+                <i class="nav-icon fas fa-home"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            
+            <div class="nav-group">
+                <div class="nav-group-title">Workforce</div>
+                <a href="{{ url_for('employee_management') }}" class="nav-item">
+                    <i class="nav-icon fas fa-users"></i>
+                    <span class="nav-text">Employees</span>
+                </a>
+                <a href="{{ url_for('hr_data_management') }}" class="nav-item">
+                    <i class="nav-icon fas fa-database"></i>
+                    <span class="nav-text">HR Records</span>
+                </a>
+                <a href="{{ url_for('wellness_tracker') }}" class="nav-item">
+                    <i class="nav-icon fas fa-heart"></i>
+                    <span class="nav-text">Wellness</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Talent</div>
+                <a href="{{ url_for('resume_screening') }}" class="nav-item">
+                    <i class="nav-icon fas fa-file-alt"></i>
+                    <span class="nav-text">Resume Screening</span>
+                </a>
+                <a href="{{ url_for('talent_sourcing') }}" class="nav-item">
+                    <i class="nav-icon fas fa-search"></i>
+                    <span class="nav-text">Talent Sourcing</span>
+                </a>
+                <a href="{{ url_for('leadership_potential') }}" class="nav-item">
+                    <i class="nav-icon fas fa-crown"></i>
+                    <span class="nav-text">Leadership</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Performance</div>
+                <a href="{{ url_for('appraisal_dashboard') }}" class="nav-item">
+                    <i class="nav-icon fas fa-clipboard-check"></i>
+                    <span class="nav-text">Appraisals</span>
+                </a>
+                <a href="{{ url_for('learning_module') }}" class="nav-item">
+                    <i class="nav-icon fas fa-graduation-cap"></i>
+                    <span class="nav-text">Learning</span>
+                </a>
+                <a href="{{ url_for('skill_gap_analysis') }}" class="nav-item">
+                    <i class="nav-icon fas fa-puzzle-piece"></i>
+                    <span class="nav-text">Skill Analysis</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Analytics</div>
+                <a href="{{ url_for('hr_insights') }}" class="nav-item">
+                    <i class="nav-icon fas fa-chart-line"></i>
+                    <span class="nav-text">Insights</span>
+                </a>
+                <a href="{{ url_for('gamification') }}" class="nav-item">
+                    <i class="nav-icon fas fa-trophy"></i>
+                    <span class="nav-text">Gamification</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('reset_data') }}" class="nav-item text-muted">
+                <i class="nav-icon fas fa-refresh"></i>
+                <span class="nav-text">Reset Data</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
-    </div>
 
-    <!-- Main Content -->
-    <main class="container mt-4">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-center py-3 mt-5">
-        <div class="container">
-            <small class="text-muted">
-                &copy; 2024 TeamZa - HR Management Platform. Built with Flask & Bootstrap.
-            </small>
+        <!-- Page Content -->
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
         </div>
-    </footer>
+    </main>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

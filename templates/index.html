@@ -3,43 +3,238 @@
 {% block title %}TeamZa - HR Management Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center py-5">
-                    <img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa Logo" style="height: 120px; width: auto; margin-bottom: 20px;" onerror="this.style.display='none';">
-                    <h1 class="display-4 mb-3">
-                        <i class="fas fa-tachometer-alt me-3"></i>TeamZa HR Dashboard
-                    </h1>
-                    <p class="lead">Comprehensive HR Management & Analytics Platform</p>
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">HR Dashboard</h1>
+            <p class="page-subtitle">Overview of your workforce and key metrics</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline-primary me-2">
+                <i class="fas fa-download me-1"></i>Export
+            </button>
+            <button class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Employee
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-users text-primary mb-3" style="font-size: 24px;"></i>
+            <div class="stats-number">{{ total_employees }}</div>
+            <div class="stats-label">Total Employees</div>
+            <div class="stats-trend trend-up">
+                <i class="fas fa-arrow-up me-1"></i>+5% this month
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-user-check text-success mb-3" style="font-size: 24px;"></i>
+            <div class="stats-number">{{ active_employees }}</div>
+            <div class="stats-label">Active Employees</div>
+            <div class="stats-trend trend-up">
+                <i class="fas fa-arrow-up me-1"></i>+2% this month
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-chart-line text-info mb-3" style="font-size: 24px;"></i>
+            <div class="stats-number">{{ avg_performance|round(1) }}</div>
+            <div class="stats-label">Avg Performance</div>
+            <div class="stats-trend trend-up">
+                <i class="fas fa-arrow-up me-1"></i>+0.3 this quarter
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <i class="fas fa-heart text-danger mb-3" style="font-size: 24px;"></i>
+            <div class="stats-number">{{ avg_wellness|round(1) }}</div>
+            <div class="stats-label">Wellness Score</div>
+            <div class="stats-trend trend-down">
+                <i class="fas fa-arrow-down me-1"></i>-0.2 this month
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row">
+    <!-- Department Distribution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-building me-2"></i>Department Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="departmentChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Recent Activities
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon bg-success">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">New Employee Added</div>
+                            <div class="activity-subtitle">John Doe joined Engineering</div>
+                            <div class="activity-time">2 hours ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-warning">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Performance Review</div>
+                            <div class="activity-subtitle">Q1 reviews completed</div>
+                            <div class="activity-time">1 day ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon bg-info">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Training Completed</div>
+                            <div class="activity-subtitle">15 employees completed security training</div>
+                            <div class="activity-time">3 days ago</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Key Metrics Row -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-users fa-3x mb-3"></i>
-                    <h3 class="card-title">{{ total_employees }}</h3>
-                    <p class="card-text">Total Employees</p>
+    <!-- Performance Trends -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>Performance Trends
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('employee_management') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-users me-2"></i>Manage Employees
+                    </a>
+                    <a href="{{ url_for('hr_data_management') }}" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-2"></i>Add New Employee
+                    </a>
+                    <a href="{{ url_for('appraisal_dashboard') }}" class="btn btn-outline-info">
+                        <i class="fas fa-clipboard-check me-2"></i>Performance Reviews
+                    </a>
+                    <a href="{{ url_for('wellness_tracker') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-heart me-2"></i>Wellness Check
+                    </a>
+                    <a href="{{ url_for('hr_insights') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-chart-line me-2"></i>Analytics
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-file-alt fa-3x mb-3"></i>
-                    <h3 class="card-title">{{ total_resumes }}</h3>
-                    <p class="card-text">Resumes Processed</p>
+    </div>
+</div>
+
+<!-- Department Performance Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>Department Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Employees</th>
+                                <th>Avg Performance</th>
+                                <th>Wellness Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dept, stats in department_stats.items() %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-building text-muted me-2"></i>
+                                        {{ dept }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">{{ stats.count }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {{ stats.avg_performance|round(1) }}
+                                        <div class="progress ms-2" style="width: 100px; height: 6px;">
+                                            <div class="progress-bar" style="width: {{ (stats.avg_performance / 10 * 100)|round }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ stats.avg_wellness|round(1) }}</td>
+                                <td>
+                                    {% if stats.avg_performance >= 8 %}
+                                        <span class="badge badge-success">Excellent</span>
+                                    {% elif stats.avg_performance >= 6 %}
+                                        <span class="badge badge-warning">Good</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Needs Improvement</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
             <div class="card bg-warning text-white h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-graduation-cap fa-3x mb-3"></i>
