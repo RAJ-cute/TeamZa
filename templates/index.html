@@ -241,9 +241,10 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Quick Actions</h5>
-                <a href="{{ url_for('initialize_real_data') }}" class="btn btn-warning btn-sm mb-2">🔄 Load Real Employee Data</a>
-                <br>
-                <a href="{{ url_for('initialize_data') }}" class="btn btn-primary btn-sm mb-2">Initialize Mock Data</a>
+                <p class="text-muted">Data is automatically loaded from attached employee files</p>
+                <a href="{{ url_for('reset_data') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-refresh me-2"></i>Reset Data
+                </a>
                 <br>
                 <a href="{{ url_for('resume_screening') }}" class="btn btn-success btn-sm mb-2">Screen Resumes</a>
                 <br>

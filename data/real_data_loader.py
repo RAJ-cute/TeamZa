@@ -66,8 +66,8 @@ class RealDataLoader:
                     'age': int(row.get('age', 30)) if pd.notna(row.get('age')) else 30,
                     'experience_years': int(row.get('experience', 2)) if pd.notna(row.get('experience')) else 2,
                     'manager_rating': float(row.get('manager_rating', 7.0)) if pd.notna(row.get('manager_rating')) else 7.0,
-                    'last_hike_date': str(row.get('last_hike_date', '2023-01-01')),
-                    'last_promotion_date': str(row.get('last_promotion_date', '2022-01-01')),
+                    'last_hike_date': self._parse_date_string(row.get('last_hike_date', '2023-01-01')),
+                    'last_promotion_date': self._parse_date_string(row.get('last_promotion_date', '2022-01-01')),
                     'skill_gaps': str(row.get('skill_gaps', 'Communication, Leadership')),
                     'skills': self._generate_skills_from_role(str(row.get('job_role', 'Unknown')))
                 }
@@ -118,6 +118,15 @@ class RealDataLoader:
         except:
             return 7.0
     
+    def _parse_date_string(self, date_str):
+        """Parse date string to date object"""
+        try:
+            if isinstance(date_str, str):
+                return datetime.strptime(date_str, '%Y-%m-%d').date()
+            return date_str
+        except:
+            return datetime.now().date()
+    
     def _generate_skills_from_role(self, job_role):
         """Generate relevant skills based on job role"""
         role_lower = job_role.lower()
@@ -154,8 +163,8 @@ class RealDataLoader:
                 'age': 28,
                 'experience_years': 5,
                 'manager_rating': 8.5,
-                'last_hike_date': '2023-06-01',
-                'last_promotion_date': '2022-12-01',
+                'last_hike_date': datetime(2023, 6, 1).date(),
+                'last_promotion_date': datetime(2022, 12, 1).date(),
                 'skill_gaps': 'Leadership, Public Speaking',
                 'skills': json.dumps(['Python', 'JavaScript', 'SQL', 'React', 'Git'])
             },
@@ -171,8 +180,8 @@ class RealDataLoader:
                 'age': 32,
                 'experience_years': 7,
                 'manager_rating': 9.0,
-                'last_hike_date': '2023-07-15',
-                'last_promotion_date': '2023-01-01',
+                'last_hike_date': datetime(2023, 7, 15).date(),
+                'last_promotion_date': datetime(2023, 1, 1).date(),
                 'skill_gaps': 'Data Analysis, Technical Skills',
                 'skills': json.dumps(['Digital Marketing', 'SEO', 'Content Strategy', 'Social Media', 'Analytics'])
             },

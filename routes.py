@@ -650,40 +650,9 @@ def get_quiz(module_name):
     quiz_data = mock_data.get_quiz_data(module_name)
     return jsonify(quiz_data)
 
-@app.route('/initialize-data')
-def initialize_data():
-    """Initialize database with mock data"""
-    try:
-        # Generate mock employees
-        employees_data = mock_data.generate_employees()
-        for emp_data in employees_data:
-            employee = Employee(**emp_data)
-            db.session.add(employee)
-
-        # Generate mock performance reviews
-        db.session.commit()  # Commit employees first
-
-        employees = Employee.query.all()
-        for employee in employees:
-            review_data = mock_data.generate_performance_review(employee.id)
-            review = PerformanceReview(**review_data)
-            db.session.add(review)
-
-        db.session.commit()
-        flash('Mock data initialized successfully!', 'success')
-    except Exception as e:
-        flash(f'Error initializing data: {str(e)}', 'error')
-        db.session.rollback()
-
-    return redirect(url_for('index'))
-
-@app.route('/initialize-real-data')
-def initialize_real_data():
-    """Initialize database with real employee data from uploaded files"""
-    if not real_data_loader:
-        flash('Real data loader not available. Please install required dependencies.', 'error')
-        return redirect(url_for('index'))
-
+@app.route('/reset-data')
+def reset_data():
+    """Reset and reload data (for testing purposes)"""
     try:
         # Clear existing data
         Resume.query.delete()
@@ -691,52 +660,14 @@ def initialize_real_data():
         LearningProgress.query.delete()
         WellnessCheck.query.delete()
         Employee.query.delete()
+        HRTransaction.query.delete()
+        EmployeeHistory.query.delete()
         db.session.commit()
-
-        # Extract ZIP contents
-        extracted_files = real_data_loader.extract_zip_contents()
-
-        # Load employee metadata
-        employees_data = real_data_loader.load_employee_metadata()
-
-        # Add employees to database
-        for emp_data in employees_data:
-            employee = Employee(**emp_data)
-            db.session.add(employee)
-
-        db.session.commit()
-
-        # Load resumes
-        resumes_data = real_data_loader.load_resumes(extracted_files)
-        for resume_data in resumes_data:
-            resume = Resume(**resume_data)
-            db.session.add(resume)
-
-        # Generate performance reviews based on manager ratings
-        employees = Employee.query.all()
-        for employee in employees:
-            review_data = {
-                'employee_id': employee.id,
-                'review_period': 'Q4 2023',
-                'feedback': f"Performance review for {employee.name}. Manager rating: {getattr(employee, 'manager_rating', 7.0)}/10. Areas for improvement: {getattr(employee, 'skill_gaps', 'General development')}",
-                'overall_rating': getattr(employee, 'manager_rating', 7.0),
-                'sentiment_score': 0.0,
-                'created_at': datetime.now()
-            }
-            review = PerformanceReview(**review_data)
-            db.session.add(review)
-
-        db.session.commit()
-
-        # Cleanup temporary files
-        real_data_loader.cleanup_temp_files()
-
-        flash(f'Real employee data initialized successfully! Loaded {len(employees_data)} employees and {len(resumes_data)} resumes.', 'success')
-
+        
+        flash('Data reset successfully! The system will reload real data automatically.', 'success')
+        
     except Exception as e:
-        flash(f'Error initializing real data: {str(e)}', 'error')
+        flash(f'Error resetting data: {str(e)}', 'error')
         db.session.rollback()
-        import traceback
-        traceback.print_exc()
 
     return redirect(url_for('index'))
