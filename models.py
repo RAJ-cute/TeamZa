@@ -135,3 +135,107 @@ class CompanyMetrics(db.Model):
     department = db.Column(db.String(50))  # null for company-wide metrics
     notes = db.Column(Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Challenge(db.Model):
+    """HR Training Challenges for gamification"""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(Text, nullable=False)
+    xp_reward = db.Column(db.Integer, default=50)
+    challenge_type = db.Column(db.String(50), default='training')  # training, quiz, module, custom
+    requirements = db.Column(Text)  # JSON string of requirements
+    deadline = db.Column(db.DateTime)
+    is_active = db.Column(db.Boolean, default=True)
+    created_by = db.Column(db.String(100), default='HR Admin')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        super(Challenge, self).__init__(**kwargs)
+
+class Badge(db.Model):
+    """Achievement badges for employees"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(Text)
+    icon = db.Column(db.String(100), default='🏆')  # emoji or icon class
+    badge_type = db.Column(db.String(50), default='achievement')  # achievement, milestone, special
+    unlock_condition = db.Column(Text)  # JSON string describing unlock condition
+    rarity = db.Column(db.String(20), default='common')  # common, rare, epic, legendary
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        super(Badge, self).__init__(**kwargs)
+
+class EmployeeXP(db.Model):
+    """Track employee XP and level"""
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    total_xp = db.Column(db.Integer, default=0)
+    current_level = db.Column(db.Integer, default=1)
+    xp_to_next_level = db.Column(db.Integer, default=100)
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    employee = db.relationship('Employee', backref=db.backref('xp_profile', uselist=False, lazy=True))
+    
+    def calculate_level(self):
+        """Calculate level based on total XP"""
+        level = 1
+        xp_needed = 100
+        remaining_xp = self.total_xp
+        
+        while remaining_xp >= xp_needed:
+            remaining_xp -= xp_needed
+            level += 1
+            xp_needed = int(xp_needed * 1.2)  # Each level requires 20% more XP
+        
+        self.current_level = level
+        self.xp_to_next_level = xp_needed - remaining_xp
+        return level
+
+class EmployeeBadge(db.Model):
+    """Track badges earned by employees"""
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=False)
+    earned_date = db.Column(db.DateTime, default=datetime.utcnow)
+    earned_for = db.Column(db.String(200))  # What they earned it for
+    employee = db.relationship('Employee', backref=db.backref('earned_badges', lazy=True))
+    badge = db.relationship('Badge', backref=db.backref('earned_by', lazy=True))
+
+class ChallengeParticipation(db.Model):
+    """Track employee participation in challenges"""
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=False)
+    status = db.Column(db.String(20), default='active')  # active, completed, failed
+    progress = db.Column(db.Integer, default=0)  # Progress percentage
+    started_date = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_date = db.Column(db.DateTime)
+    xp_earned = db.Column(db.Integer, default=0)
+    employee = db.relationship('Employee', backref=db.backref('challenge_participations', lazy=True))
+    challenge = db.relationship('Challenge', backref=db.backref('participants', lazy=True))
+
+class Quiz(db.Model):
+    """Quiz questions for HR modules"""
+    id = db.Column(db.Integer, primary_key=True)
+    module_name = db.Column(db.String(100), nullable=False)
+    question = db.Column(Text, nullable=False)
+    option_a = db.Column(db.String(200), nullable=False)
+    option_b = db.Column(db.String(200), nullable=False)
+    option_c = db.Column(db.String(200), nullable=False)
+    option_d = db.Column(db.String(200), nullable=False)
+    correct_answer = db.Column(db.String(1), nullable=False)  # A, B, C, or D
+    explanation = db.Column(Text)
+    difficulty = db.Column(db.String(20), default='medium')  # easy, medium, hard
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class QuizAttempt(db.Model):
+    """Track employee quiz attempts"""
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+    selected_answer = db.Column(db.String(1), nullable=False)
+    is_correct = db.Column(db.Boolean, nullable=False)
+    attempt_date = db.Column(db.DateTime, default=datetime.utcnow)
+    employee = db.relationship('Employee', backref=db.backref('quiz_attempts', lazy=True))
+    quiz = db.relationship('Quiz', backref=db.backref('attempts', lazy=True))

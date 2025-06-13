@@ -98,5 +98,99 @@ with app.app_context():
             import traceback
             traceback.print_exc()
 
+# Create tables
+with app.app_context():
+    db.create_all()
+
+    # Initialize sample gamification data
+    from models import Challenge, Badge, Quiz
+
+    # Check if sample data already exists
+    if Challenge.query.count() == 0:
+        # Create sample challenges
+        sample_challenges = [
+            Challenge(
+                title="Ethics Champion",
+                description="Complete the HR Ethics training module and pass the quiz with 80% or higher",
+                xp_reward=100,
+                challenge_type="quiz"
+            ),
+            Challenge(
+                title="Policy Pro",
+                description="Study company policies and complete the compliance assessment",
+                xp_reward=75,
+                challenge_type="training"
+            ),
+            Challenge(
+                title="Fast Finisher",
+                description="Complete any training challenge within 24 hours of starting",
+                xp_reward=50,
+                challenge_type="custom"
+            ),
+            Challenge(
+                title="Team Contributor",
+                description="Score 90% or higher on 3 different HR module quizzes",
+                xp_reward=150,
+                challenge_type="quiz"
+            )
+        ]
+
+        for challenge in sample_challenges:
+            db.session.add(challenge)
+
+        # Create sample badges
+        sample_badges = [
+            Badge(
+                name="First Steps",
+                description="Earn your first 100 XP",
+                icon="🌟",
+                rarity="common",
+                unlock_condition="Total XP >= 100"
+            ),
+            Badge(
+                name="Rising Star",
+                description="Reach 500 total XP",
+                icon="⭐",
+                rarity="rare",
+                unlock_condition="Total XP >= 500"
+            ),
+            Badge(
+                name="Champion",
+                description="Achieve 1000 total XP",
+                icon="🏆",
+                rarity="epic",
+                unlock_condition="Total XP >= 1000"
+            ),
+            Badge(
+                name="Challenge Master",
+                description="Complete 3 or more challenges",
+                icon="🎯",
+                rarity="rare",
+                unlock_condition="Completed challenges >= 3"
+            ),
+            Badge(
+                name="Ethics Expert",
+                description="Master all ethics-related content",
+                icon="⚖️",
+                rarity="epic",
+                unlock_condition="Complete Ethics modules"
+            ),
+            Badge(
+                name="Speed Demon",
+                description="Complete challenges quickly",
+                icon="⚡",
+                rarity="rare",
+                unlock_condition="Fast completion times"
+            )
+        ]
+
+        for badge in sample_badges:
+            db.session.add(badge)
+
+        db.session.commit()
+        print("Sample gamification data created!")
+
+    print("Database tables created successfully!")
+
 # Import routes after everything is set up
 import routes

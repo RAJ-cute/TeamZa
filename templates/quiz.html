@@ -1,0 +1,195 @@
+
+{% extends "base.html" %}
+
+{% block title %}📝 HR Training Quiz - {{ challenge.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Quiz Header -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h2 class="display-5 fw-bold text-primary">📝 HR Training Quiz</h2>
+                <h4 class="text-muted">{{ challenge.title }}</h4>
+                <p class="lead">{{ challenge.description }}</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-trophy me-2"></i>
+                    Complete this quiz with 80% or higher to earn <strong>{{ challenge.xp_reward }} XP</strong>!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Container -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="quiz-container">
+                <form method="POST" action="{{ url_for('submit_quiz') }}" id="quizForm">
+                    <input type="hidden" name="challenge_id" value="{{ challenge.id }}">
+                    
+                    <!-- Employee Selection -->
+                    <div class="mb-4">
+                        <label for="employee_id" class="form-label">Select Your Name</label>
+                        <select class="form-select" id="employee_id" name="employee_id" required>
+                            <option value="">Choose your name...</option>
+                            {% for employee in employees %}
+                            <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Quiz Questions -->
+                    {% for question in questions %}
+                    <div class="quiz-question-container mb-5">
+                        <div class="quiz-question">
+                            <span class="badge bg-primary me-2">{{ loop.index }}</span>
+                            {{ question.question }}
+                        </div>
+                        
+                        <div class="quiz-options">
+                            <div class="quiz-option" onclick="selectOption(this, {{ question.id }}, 'A')">
+                                <input type="radio" name="question_{{ question.id }}" value="A" id="q{{ question.id }}_a" hidden>
+                                <label for="q{{ question.id }}_a" class="w-100 mb-0">
+                                    <strong>A)</strong> {{ question.option_a }}
+                                </label>
+                            </div>
+                            
+                            <div class="quiz-option" onclick="selectOption(this, {{ question.id }}, 'B')">
+                                <input type="radio" name="question_{{ question.id }}" value="B" id="q{{ question.id }}_b" hidden>
+                                <label for="q{{ question.id }}_b" class="w-100 mb-0">
+                                    <strong>B)</strong> {{ question.option_b }}
+                                </label>
+                            </div>
+                            
+                            <div class="quiz-option" onclick="selectOption(this, {{ question.id }}, 'C')">
+                                <input type="radio" name="question_{{ question.id }}" value="C" id="q{{ question.id }}_c" hidden>
+                                <label for="q{{ question.id }}_c" class="w-100 mb-0">
+                                    <strong>C)</strong> {{ question.option_c }}
+                                </label>
+                            </div>
+                            
+                            <div class="quiz-option" onclick="selectOption(this, {{ question.id }}, 'D')">
+                                <input type="radio" name="question_{{ question.id }}" value="D" id="q{{ question.id }}_d" hidden>
+                                <label for="q{{ question.id }}_d" class="w-100 mb-0">
+                                    <strong>D)</strong> {{ question.option_d }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Submit Button -->
+                    <div class="text-center mt-5">
+                        <button type="submit" class="btn btn-success btn-lg" id="submitQuiz" disabled>
+                            <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Gamification -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('gamification') }}" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left me-2"></i>Back to Gamification Portal
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedAnswers = {};
+const totalQuestions = {{ questions|length }};
+
+function selectOption(element, questionId, option) {
+    // Remove selected class from all options for this question
+    const questionContainer = element.closest('.quiz-question-container');
+    const allOptions = questionContainer.querySelectorAll('.quiz-option');
+    allOptions.forEach(opt => opt.classList.remove('selected'));
+    
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    
+    // Update the hidden radio button
+    const radioInput = element.querySelector('input[type="radio"]');
+    radioInput.checked = true;
+    
+    // Track selected answer
+    selectedAnswers[questionId] = option;
+    
+    // Check if all questions are answered
+    checkSubmitButton();
+}
+
+function checkSubmitButton() {
+    const submitButton = document.getElementById('submitQuiz');
+    const employeeSelect = document.getElementById('employee_id');
+    
+    if (Object.keys(selectedAnswers).length === totalQuestions && employeeSelect.value) {
+        submitButton.disabled = false;
+        submitButton.classList.add('pulse');
+    } else {
+        submitButton.disabled = true;
+        submitButton.classList.remove('pulse');
+    }
+}
+
+// Listen for employee selection
+document.getElementById('employee_id').addEventListener('change', checkSubmitButton);
+
+// Add animation to quiz container
+document.addEventListener('DOMContentLoaded', function() {
+    const quizContainer = document.querySelector('.quiz-container');
+    quizContainer.classList.add('fade-in');
+    
+    // Animate questions one by one
+    const questionContainers = document.querySelectorAll('.quiz-question-container');
+    questionContainers.forEach((container, index) => {
+        container.style.animationDelay = `${index * 0.2}s`;
+        container.classList.add('slide-in-left');
+    });
+});
+
+// Form submission with confirmation
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    if (!confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
+        e.preventDefault();
+    } else {
+        // Show loading state
+        const submitButton = document.getElementById('submitQuiz');
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+        submitButton.disabled = true;
+    }
+});
+</script>
+
+<style>
+.quiz-question-container {
+    opacity: 0;
+    animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+</style>
+{% endblock %}

@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify, flash, redirect, url_for
 from app import app, db
-from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview, HRTransaction, EmployeeHistory, CompanyMetrics, HealthMetrics
+from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview, HRTransaction, EmployeeHistory, CompanyMetrics, HealthMetrics, Challenge, Badge, EmployeeXP, EmployeeBadge, ChallengeParticipation, Quiz, QuizAttempt
 from utils.nlp_processor import NLPProcessor
 from utils.hr_analytics import HRAnalytics
 from utils.document_parser import DocumentParser
@@ -696,6 +696,297 @@ def export_employee_data(employee_id):
         download_name=f'{employee_name}_details_{datetime.now().strftime("%Y%m%d")}.xlsx',
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
+
+@app.route('/gamification', methods=['GET', 'POST'])
+def gamification():
+    """Gamified HR Portal - Main dashboard for challenges, badges, and leaderboards"""
+    from models import Challenge, Badge, EmployeeXP, EmployeeBadge, ChallengeParticipation, Quiz, QuizAttempt
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'create_challenge':
+            title = request.form.get('title')
+            description = request.form.get('description')
+            xp_reward = int(request.form.get('xp_reward', 50))
+            challenge_type = request.form.get('challenge_type', 'training')
+            deadline_str = request.form.get('deadline')
+            
+            deadline = None
+            if deadline_str:
+                deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+            
+            challenge = Challenge(
+                title=title,
+                description=description,
+                xp_reward=xp_reward,
+                challenge_type=challenge_type,
+                deadline=deadline,
+                created_by=request.form.get('created_by', 'HR Admin')
+            )
+            db.session.add(challenge)
+            db.session.commit()
+            
+            flash(f'Challenge "{title}" created successfully!', 'success')
+            return redirect(url_for('gamification'))
+            
+        elif action == 'create_badge':
+            name = request.form.get('name')
+            description = request.form.get('description')
+            icon = request.form.get('icon', '🏆')
+            badge_type = request.form.get('badge_type', 'achievement')
+            rarity = request.form.get('rarity', 'common')
+            unlock_condition = request.form.get('unlock_condition')
+            
+            badge = Badge(
+                name=name,
+                description=description,
+                icon=icon,
+                badge_type=badge_type,
+                rarity=rarity,
+                unlock_condition=unlock_condition
+            )
+            db.session.add(badge)
+            db.session.commit()
+            
+            flash(f'Badge "{name}" created successfully!', 'success')
+            return redirect(url_for('gamification'))
+            
+        elif action == 'join_challenge':
+            employee_id = int(request.form.get('employee_id'))
+            challenge_id = int(request.form.get('challenge_id'))
+            
+            # Check if already participating
+            existing = ChallengeParticipation.query.filter_by(
+                employee_id=employee_id, 
+                challenge_id=challenge_id
+            ).first()
+            
+            if not existing:
+                participation = ChallengeParticipation(
+                    employee_id=employee_id,
+                    challenge_id=challenge_id
+                )
+                db.session.add(participation)
+                db.session.commit()
+                flash('Successfully joined the challenge!', 'success')
+            else:
+                flash('Already participating in this challenge!', 'info')
+                
+            return redirect(url_for('gamification'))
+    
+    # Get all data for the dashboard
+    challenges = Challenge.query.filter_by(is_active=True).order_by(Challenge.created_at.desc()).all()
+    badges = Badge.query.filter_by(is_active=True).order_by(Badge.created_at.desc()).all()
+    employees = Employee.query.filter_by(status='active').all()
+    
+    # Initialize XP profiles for employees who don't have them
+    for employee in employees:
+        if not employee.xp_profile:
+            xp_profile = EmployeeXP(employee_id=employee.id)
+            db.session.add(xp_profile)
+    db.session.commit()
+    
+    # Get leaderboard (top 10)
+    leaderboard = db.session.query(Employee, EmployeeXP).join(EmployeeXP).order_by(EmployeeXP.total_xp.desc()).limit(10).all()
+    
+    # Get recent achievements
+    recent_badges = db.session.query(EmployeeBadge, Employee, Badge).join(Employee).join(Badge).order_by(EmployeeBadge.earned_date.desc()).limit(5).all()
+    
+    # Challenge statistics
+    total_challenges = Challenge.query.count()
+    active_challenges = Challenge.query.filter_by(is_active=True).count()
+    total_participations = ChallengeParticipation.query.count()
+    completed_challenges = ChallengeParticipation.query.filter_by(status='completed').count()
+    
+    return render_template('gamification.html',
+                         challenges=challenges,
+                         badges=badges,
+                         employees=employees,
+                         leaderboard=leaderboard,
+                         recent_badges=recent_badges,
+                         total_challenges=total_challenges,
+                         active_challenges=active_challenges,
+                         total_participations=total_participations,
+                         completed_challenges=completed_challenges)
+
+@app.route('/gamification/quiz/<int:challenge_id>')
+def take_quiz(challenge_id):
+    """Take a quiz for a specific challenge"""
+    from models import Challenge, Quiz
+    
+    challenge = Challenge.query.get_or_404(challenge_id)
+    
+    # Get quiz questions for this challenge/module
+    quiz_questions = Quiz.query.filter_by(module_name='Ethics').limit(5).all()  # Sample quiz
+    
+    if not quiz_questions:
+        # Create sample quiz questions if none exist
+        sample_questions = [
+            {
+                'question': 'What is the most important aspect of workplace ethics?',
+                'option_a': 'Following company policies',
+                'option_b': 'Respecting colleagues and maintaining integrity',
+                'option_c': 'Completing tasks on time',
+                'option_d': 'Attending all meetings',
+                'correct_answer': 'B',
+                'explanation': 'Workplace ethics is fundamentally about respect and integrity in all professional interactions.'
+            },
+            {
+                'question': 'How should confidential information be handled?',
+                'option_a': 'Share only with trusted colleagues',
+                'option_b': 'Keep it completely private unless authorized to share',
+                'option_c': 'Use it for decision making only',
+                'option_d': 'Store it in personal files',
+                'correct_answer': 'B',
+                'explanation': 'Confidential information should only be shared when properly authorized.'
+            },
+            {
+                'question': 'What constitutes a conflict of interest?',
+                'option_a': 'Working overtime',
+                'option_b': 'Having personal relationships with colleagues',
+                'option_c': 'Personal interests interfering with professional judgment',
+                'option_d': 'Disagreeing with management',
+                'correct_answer': 'C',
+                'explanation': 'A conflict of interest occurs when personal interests could compromise professional judgment.'
+            }
+        ]
+        
+        for q_data in sample_questions:
+            quiz = Quiz(
+                module_name='Ethics',
+                question=q_data['question'],
+                option_a=q_data['option_a'],
+                option_b=q_data['option_b'],
+                option_c=q_data['option_c'],
+                option_d=q_data['option_d'],
+                correct_answer=q_data['correct_answer'],
+                explanation=q_data['explanation']
+            )
+            db.session.add(quiz)
+        
+        db.session.commit()
+        quiz_questions = Quiz.query.filter_by(module_name='Ethics').limit(5).all()
+    
+    return render_template('quiz.html', challenge=challenge, questions=quiz_questions)
+
+@app.route('/gamification/submit-quiz', methods=['POST'])
+def submit_quiz():
+    """Submit quiz answers and calculate score"""
+    from models import QuizAttempt, EmployeeXP, ChallengeParticipation, EmployeeBadge, Badge
+    
+    employee_id = int(request.form.get('employee_id'))
+    challenge_id = int(request.form.get('challenge_id'))
+    
+    # Get submitted answers
+    submitted_answers = {}
+    for key, value in request.form.items():
+        if key.startswith('question_'):
+            question_id = int(key.split('_')[1])
+            submitted_answers[question_id] = value
+    
+    # Calculate score
+    correct_answers = 0
+    total_questions = len(submitted_answers)
+    
+    for question_id, answer in submitted_answers.items():
+        quiz = Quiz.query.get(question_id)
+        is_correct = (answer.upper() == quiz.correct_answer.upper())
+        
+        if is_correct:
+            correct_answers += 1
+        
+        # Record attempt
+        attempt = QuizAttempt(
+            employee_id=employee_id,
+            quiz_id=question_id,
+            selected_answer=answer.upper(),
+            is_correct=is_correct
+        )
+        db.session.add(attempt)
+    
+    # Calculate percentage
+    score_percentage = (correct_answers / total_questions) * 100 if total_questions > 0 else 0
+    
+    # Award XP if score is good (80% or higher)
+    if score_percentage >= 80:
+        challenge = Challenge.query.get(challenge_id)
+        xp_to_award = challenge.xp_reward
+        
+        # Update employee XP
+        employee_xp = EmployeeXP.query.filter_by(employee_id=employee_id).first()
+        if employee_xp:
+            employee_xp.total_xp += xp_to_award
+            employee_xp.calculate_level()
+            employee_xp.last_activity = datetime.utcnow()
+        
+        # Mark challenge as completed
+        participation = ChallengeParticipation.query.filter_by(
+            employee_id=employee_id, 
+            challenge_id=challenge_id
+        ).first()
+        
+        if participation:
+            participation.status = 'completed'
+            participation.completed_date = datetime.utcnow()
+            participation.xp_earned = xp_to_award
+            participation.progress = 100
+        
+        # Check for badge awards
+        _check_and_award_badges(employee_id)
+        
+        db.session.commit()
+        
+        flash(f'Congratulations! You scored {score_percentage:.1f}% and earned {xp_to_award} XP!', 'success')
+    else:
+        flash(f'You scored {score_percentage:.1f}%. You need 80% or higher to complete the challenge.', 'warning')
+    
+    return redirect(url_for('gamification'))
+
+def _check_and_award_badges(employee_id):
+    """Check if employee qualifies for any new badges"""
+    from models import Badge, EmployeeBadge, EmployeeXP, ChallengeParticipation
+    
+    employee_xp = EmployeeXP.query.filter_by(employee_id=employee_id).first()
+    completed_challenges = ChallengeParticipation.query.filter_by(
+        employee_id=employee_id, 
+        status='completed'
+    ).count()
+    
+    # Check for XP-based badges
+    if employee_xp and employee_xp.total_xp >= 100:
+        _award_badge_if_not_earned(employee_id, 'First Steps', '🌟')
+    
+    if employee_xp and employee_xp.total_xp >= 500:
+        _award_badge_if_not_earned(employee_id, 'Rising Star', '⭐')
+    
+    if employee_xp and employee_xp.total_xp >= 1000:
+        _award_badge_if_not_earned(employee_id, 'Champion', '🏆')
+    
+    # Check for challenge completion badges
+    if completed_challenges >= 3:
+        _award_badge_if_not_earned(employee_id, 'Challenge Master', '🎯')
+
+def _award_badge_if_not_earned(employee_id, badge_name, icon):
+    """Award a badge if not already earned"""
+    from models import Badge, EmployeeBadge
+    
+    # Check if badge exists
+    badge = Badge.query.filter_by(name=badge_name).first()
+    if not badge:
+        badge = Badge(name=badge_name, icon=icon, description=f'Earned for {badge_name.lower()}')
+        db.session.add(badge)
+        db.session.flush()
+    
+    # Check if already earned
+    existing = EmployeeBadge.query.filter_by(employee_id=employee_id, badge_id=badge.id).first()
+    if not existing:
+        earned_badge = EmployeeBadge(
+            employee_id=employee_id,
+            badge_id=badge.id,
+            earned_for=f'Awarded for {badge_name.lower()}'
+        )
+        db.session.add(earned_badge)
 
 @app.route('/employee-insights/<int:employee_id>')
 def employee_insights(employee_id):
