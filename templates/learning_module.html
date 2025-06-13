@@ -45,8 +45,8 @@
         <div class="card bg-info">
             <div class="card-body text-center">
                 <i class="fas fa-medal fa-2x mb-2"></i>
-                <h3 class="card-title">{{ leaderboard|sum(attribute='modules_completed') if leaderboard else 0 }}</h3>
-                <p class="card-text">Total Completions</p>
+                <h3 class="card-title">{% if leaderboard %}{{ leaderboard|length }}{% else %}0{% endif %}</h3>
+                <p class="card-text">Active Learners</p>
             </div>
         </div>
     </div>
