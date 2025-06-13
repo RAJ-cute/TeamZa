@@ -32,6 +32,11 @@ def login():
     """Login page for accessing the HR platform"""
     return render_template('login.html')
 
+@app.route('/hr_command_center')
+def hr_command_center():
+    """Redirect to main dashboard for now"""
+    return redirect(url_for('dashboard'))
+
 @app.route('/dashboard')
 def dashboard():
     """HR Management Dashboard showing overview of all employee data"""
