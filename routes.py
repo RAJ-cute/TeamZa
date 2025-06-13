@@ -205,16 +205,16 @@ def leadership_potential():
             # Generate review based on manager rating
             manager_rating = employee.manager_rating or 7.0
             review_data = hr_analytics.generate_performance_review_with_reviewer(
-                employee, manager_rating, reviewers, reviewer_usage
+                employee.name, manager_rating
             )
 
             leadership_candidates.append({
                 'employee': employee,
                 'potential_score': potential_score,
                 'growth_actions': growth_actions,
-                'review': review_data['review'],
+                'review': review_data['feedback'],
                 'reviewer': review_data['reviewer'],
-                'star_rating': review_data['star_rating']
+                'star_rating': review_data['overall_rating']
             })
 
     # Sort by potential score
