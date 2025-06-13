@@ -352,42 +352,26 @@ def wellness_tracker():
 @app.route('/hr-insights')
 def hr_insights():
     """Comprehensive HR Insights Dashboard with Company and Individual Analytics"""
-    from datetime import datetime, timedelta
-    import random
-
-    # Get all employees
-    employees = Employee.query.all()
-
-    # Company-wide insights
-    total_employees = len(employees)
-
-    # Department distribution
-    dept_stats = {}
-    for emp in employees:
-        dept_stats[emp.department] = dept_stats.get(emp.department, 0) + 1
-
-    # Performance metrics
-    if employees:
-        avg_performance = sum(emp.performance_score or 7.0 for emp in employees) / len(employees)
-        top_performers = [emp for emp in employees if (emp.performance_score or 7.0) >= 8.5]
-    else:
-        avg_performance = 0
-        top_performers = []
-
-    # Mock increment data (in real scenario, this would come from HR records)
-    increment_data = {
-        'total_increments': random.randint(15, 25),
-        'avg_increment_percent': random.uniform(8, 15),
-        'increment_by_dept': {dept: random.randint(2, 5) for dept in dept_stats.keys()}
-    }
-
-    # Mock joining/leaving data
-    joining_leaving_data = {
-        'joined_this_year': random.randint(8, 15),
-        'left_this_year': random.randint(2, 8),
-        'net_growth': 0
-    }
-    joining_leaving_data['net_growth'] = joining_leaving_data['joined_this_year'] - joining_leaving_data['left_this_year']
+    from utils.real_hr_analytics import RealHRAnalytics
+    
+    # Initialize analytics processor
+    analytics = RealHRAnalytics()
+    
+    # Get comprehensive company insights
+    insights_data = analytics.get_company_insights()
+    
+    # Extract data for template
+    total_employees = insights_data['total_employees']
+    dept_stats = insights_data['department_distribution']
+    increment_data = insights_data['increment_data']
+    joining_leaving_data = insights_data['joining_leaving_data']
+    performance_data = insights_data['performance_data']
+    employee_leaderboard = insights_data['employee_leaderboard']
+    monthly_trends = insights_data['monthly_trends']
+    wellness_summary = insights_data['wellness_summary']
+    
+    # Get all employees for individual insights tab
+    employees = Employee.query.filter_by(status='active').all()
 
     # Employee leaderboard based on performance
     employee_leaderboard = sorted(
