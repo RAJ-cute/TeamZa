@@ -214,7 +214,7 @@ def leadership_potential():
                 'growth_actions': growth_actions,
                 'review': review_data['feedback'],
                 'reviewer': review_data['reviewer'],
-                'star_rating': review_data['overall_rating']
+                'star_rating': int(review_data['overall_rating'])
             })
 
     # Sort by potential score
@@ -397,6 +397,12 @@ def hr_insights():
         'avg_increment': db.session.query(db.func.avg(HRTransaction.percentage)).filter_by(transaction_type='increment').scalar() or 0
     }
     
+    # Add missing joining/leaving data
+    joining_leaving_data = {
+        'joined_this_year': HRTransaction.query.filter_by(transaction_type='joining').count(),
+        'left_this_year': HRTransaction.query.filter_by(transaction_type='exit').count()
+    }
+    
     return render_template('hr_insights.html',
                          total_employees=total_employees,
                          dept_stats=dept_stats,
@@ -406,6 +412,7 @@ def hr_insights():
                          wellness_summary=wellness_summary,
                          insights_data=insights_data,
                          increment_data=increment_data,
+                         joining_leaving_data=joining_leaving_data,
                          employees=employees)
 
 @app.route('/hr-data-management', methods=['GET', 'POST'])
