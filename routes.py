@@ -208,22 +208,8 @@ def leadership_potential():
                 employee, manager_rating, reviewers, reviewer_usage
             )
 
-            # Serialize employee data
-            employee_data = {
-                'id': employee.id,
-                'name': employee.name,
-                'email': employee.email,
-                'department': employee.department,
-                'position': employee.position,
-                'hire_date': employee.hire_date,
-                'performance_score': employee.performance_score,
-                'manager_rating': employee.manager_rating,
-                'experience_years': employee.experience_years,
-                'skills': employee.skills
-            }
-
             leadership_candidates.append({
-                'employee': employee_data,
+                'employee': employee,
                 'potential_score': potential_score,
                 'growth_actions': growth_actions,
                 'review': review_data['review'],
@@ -261,7 +247,7 @@ def learning_module():
     """HR Employee Learning Management - Track and manage employee learning progress"""
 
     # Get learning modules and leaderboard
-    modules = mock_data.get_learning_modules()
+    modules = mock_data_gen.get_learning_modules()
     leaderboard = hr_analytics.get_learning_leaderboard()
     employees = Employee.query.all()
 
@@ -353,42 +339,43 @@ def wellness_tracker():
 @app.route('/hr-insights')
 def hr_insights():
     """Comprehensive HR Insights Dashboard with Company and Individual Analytics"""
-    from utils.real_hr_analytics import RealHRAnalytics
-
-    # Initialize analytics processor
-    analytics = RealHRAnalytics()
-
-    # Get comprehensive company insights
-    insights_data = analytics.get_company_insights()
-
-    # Extract data for template
-    total_employees = insights_data['total_employees']
-    dept_stats = insights_data['department_distribution']
-    increment_data = insights_data['increment_data']
-    joining_leaving_data = insights_data['joining_leaving_data']
-    performance_data = insights_data['performance_data']
-    employee_leaderboard = insights_data['employee_leaderboard']
-    monthly_trends = insights_data['monthly_trends']
-    wellness_summary = insights_data['wellness_summary']
+    # Get comprehensive company insights using existing analytics
+    insights_data = hr_analytics.generate_hr_insights()
 
     # Get all employees for individual insights tab
     employees = Employee.query.filter_by(status='active').all()
-
-    # Extract real performance data
-    avg_performance = performance_data['average_rating']
-    top_performers = [emp for emp in employees if (emp.performance_score or 0) >= 8.5]
+    
+    # Department distribution
+    dept_stats = db.session.query(Employee.department, db.func.count(Employee.id)).group_by(Employee.department).all()
+    
+    # Performance data
+    avg_performance = db.session.query(db.func.avg(Employee.performance_score)).scalar() or 0
+    top_performers = Employee.query.filter(Employee.performance_score >= 8.5).all()
+    
+    # Monthly trends (simplified)
+    total_employees = Employee.query.count()
+    monthly_trends = {
+        'headcount': [total_employees] * 12,
+        'performance': [avg_performance] * 12,
+        'satisfaction': [7.5] * 12
+    }
+    
+    # Wellness summary
+    wellness_summary = {
+        'total_checks': WellnessCheck.query.count(),
+        'green_status': WellnessCheck.query.filter_by(overall_wellness='green').count(),
+        'yellow_status': WellnessCheck.query.filter_by(overall_wellness='yellow').count(),
+        'red_status': WellnessCheck.query.filter_by(overall_wellness='red').count()
+    }
 
     return render_template('hr_insights.html',
                          total_employees=total_employees,
                          dept_stats=dept_stats,
                          avg_performance=avg_performance,
                          top_performers=top_performers,
-                         increment_data=increment_data,
-                         joining_leaving_data=joining_leaving_data,
-                         employee_leaderboard=employee_leaderboard,
                          monthly_trends=monthly_trends,
                          wellness_summary=wellness_summary,
-                         performance_data=performance_data,
+                         insights_data=insights_data,
                          employees=employees)
 
 @app.route('/hr-data-management', methods=['GET', 'POST'])
@@ -401,10 +388,19 @@ def hr_data_management():
         action = request.form.get('action')
 
         if action == 'add_increment':
-            employee_id = int(request.form.get('employee_id'))
-            increment_amount = float(request.form.get('increment_amount', 0))
-            increment_percentage = float(request.form.get('increment_percentage', 0))
-            increment_date = datetime.strptime(request.form.get('increment_date'), '%Y-%m-%d').date()
+            employee_id_str = request.form.get('employee_id')
+            increment_amount_str = request.form.get('increment_amount', '0')
+            increment_percentage_str = request.form.get('increment_percentage', '0')
+            increment_date_str = request.form.get('increment_date')
+            
+            if not employee_id_str or not increment_date_str:
+                flash('Employee ID and increment date are required', 'error')
+                return redirect(url_for('hr_data_management'))
+                
+            employee_id = int(employee_id_str)
+            increment_amount = float(increment_amount_str)
+            increment_percentage = float(increment_percentage_str)
+            increment_date = datetime.strptime(increment_date_str, '%Y-%m-%d').date()
             reason = request.form.get('reason', '')
             created_by = request.form.get('created_by', 'HR Admin')
 

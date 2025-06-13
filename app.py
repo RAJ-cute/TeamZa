@@ -1,8 +1,20 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
+import json
 
 app = Flask(__name__)
+
+# Add custom template filter for JSON parsing
+@app.template_filter('from_json')
+def from_json_filter(value):
+    """Parse JSON string to Python object"""
+    if not value:
+        return []
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return []
 
 # Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))

@@ -79,6 +79,9 @@ class HRTransaction(db.Model):
     created_by = db.Column(db.String(100))  # HR person who made the entry
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     employee = db.relationship('Employee', backref=db.backref('hr_transactions', lazy=True))
+    
+    def __init__(self, **kwargs):
+        super(HRTransaction, self).__init__(**kwargs)
 
 class EmployeeHistory(db.Model):
     """Track employee historical data changes"""
