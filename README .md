@@ -10,11 +10,11 @@
 
 ## 🚀 Overview
 
-TeamZa is a comprehensive AI-powered Human Resources management platform that revolutionizes every aspect of HR operations. From intelligent resume screening to predictive analytics and employee wellness tracking, TeamZa provides modern HR teams with the tools they need to make data-driven decisions.
+TeamZa is an all-inclusive, AI-driven Human Resources management software that transforms all aspects of HR functions. From smart resume filtering to predictive analytics and employee wellbeing monitoring, TeamZa offers contemporary HR teams the tools they require to drive data-driven decisions
 
-## ✨ Key Features
+##  Key Features
 
-### 🤖 AI-Powered Modules
+###  AI-Powered Modules
 
 1. **AI Resume Screening**
    - Advanced NLP analysis of resumes
@@ -56,7 +56,7 @@ TeamZa is a comprehensive AI-powered Human Resources management platform that re
    - Achievement badges
    - XP and level progression
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```
 TeamZa HR Platform
@@ -78,48 +78,6 @@ TeamZa HR Platform
     └── Analytics Storage
 ```
 
-## 🛠️ Installation & Setup
-
-### Prerequisites
-- Python 3.8 or higher
-- Git
-
-### Quick Start
-
-1. **Clone the Repository**
-   ```bash
-   git clone <repository-url>
-   cd teamza-hr-platform
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Initialize the Database**
-   ```bash
-   python app.py
-   ```
-   The database will auto-initialize with sample data on first run.
-
-4. **Run the Application**
-   ```bash
-   python main.py
-   ```
-
-5. **Access the Platform**
-   Open your browser and navigate to `http://0.0.0.0:5000`
-
-### Replit Deployment
-
-This application is optimized for Replit deployment:
-
-1. Fork this repl
-2. Click the "Run" button
-3. Your app will be available at the provided URL
-
-## 📊 Database Schema
 
 ### Core Models
 
@@ -131,65 +89,21 @@ This application is optimized for Replit deployment:
 - **HRTransaction**: Salary changes, promotions, and career events
 - **Challenge/Badge**: Gamification system components
 
-## 🎯 Usage Guide
 
-### For HR Administrators
+### Upcoming Features
 
-1. **Dashboard Overview**
-   - View real-time workforce metrics
-   - Monitor department performance
-   - Track wellness indicators
+- [ ] Advanced AI/ML models
+- [ ] Trained on anonymized performance data to identify future high-potential candidates
+- [ ] Semantic matching between job roles and current skills using transformer-based embeddings
+- [ ] Lightweight NLP model to assess emotional tone from employee feedback.
+- [ ] Natural language voice interface for initial candidate screening (using Whisper/OpenAI/Deepgram).
+- [ ] Integration with popular HR systems (Workday, BambooHR)
+- [ ] Mobile application for iOS and Android
+- [ ] Advanced reporting and dashboard customization
+- [ ] Multi-language support
+- [ ] Real-time notifications and alerts
 
-2. **Employee Management**
-   - Add/edit employee profiles
-   - Manage performance reviews
-   - Track career progression
 
-3. **Recruitment**
-   - Upload and screen resumes
-   - Source candidates intelligently
-   - Rank candidates automatically
-
-4. **Analytics**
-   - Generate comprehensive reports
-   - Export data to Excel
-   - Monitor trends and predictions
-
-### For Employees
-
-1. **Learning Portal**
-   - Access personalized learning paths
-   - Complete challenges and quizzes
-   - Track skill development
-
-2. **Wellness Tracking**
-   - Log wellness check-ins
-   - View health recommendations
-   - Monitor progress over time
-
-3. **Gamification**
-   - Participate in challenges
-   - Earn badges and XP
-   - Compete on leaderboards
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///instance/hr_platform.db
-FLASK_ENV=development
-FLASK_DEBUG=True
-```
-
-### Customization
-
-1. **Styling**: Modify `static/css/custom.css` for UI customization
-2. **Analytics**: Adjust weights in `utils/hr_analytics.py`
-3. **NLP Models**: Enhance `utils/nlp_processor.py` for better AI processing
 
 ## 📁 Project Structure
 
@@ -211,25 +125,8 @@ teamza-hr-platform/
 └── instance/             # Database and instance files
 ```
 
-## 🔍 API Endpoints
 
-### Core Endpoints
-
-- `GET /` - Landing page
-- `GET /dashboard` - Main HR dashboard
-- `GET /employee-management` - Employee listing and management
-- `POST /resume-screening` - Resume upload and analysis
-- `GET /hr-insights` - Comprehensive analytics
-- `GET /gamification` - Gamification dashboard
-
-### API Routes
-
-- `GET /api/quiz/<module_name>` - Get quiz data
-- `POST /gamification/submit-quiz` - Submit quiz answers
-- `GET /export-company-data` - Export company insights
-- `GET /export-employee-data/<id>` - Export employee data
-
-## 🎨 UI/UX Features
+##  UI/UX Features
 
 - **Responsive Design**: Works seamlessly across devices
 - **Dark/Light Themes**: Adaptive color schemes
@@ -237,27 +134,6 @@ teamza-hr-platform/
 - **Modern UI**: Clean, professional interface
 - **Accessibility**: WCAG compliant design
 
-
-
-### Upcoming Features
-
-- [ ] Advanced AI/ML models
-- [ ] Trained on anonymized performance data to identify future high-potential candidates
-- [ ] Semantic matching between job roles and current skills using transformer-based embeddings
-- [ ] Lightweight NLP model to assess emotional tone from employee feedback.
-- [ ] Natural language voice interface for initial candidate screening (using Whisper/OpenAI/Deepgram).
-- [ ] Integration with popular HR systems (Workday, BambooHR)
-- [ ] Mobile application for iOS and Android
-- [ ] Advanced reporting and dashboard customization
-- [ ] Multi-language support
-- [ ] Real-time notifications and alerts
-
-
-
-
-
-
----
 
 <div align="center">
   <p><strong>Built with ❤️ by the TeamZa Team</strong></p>
