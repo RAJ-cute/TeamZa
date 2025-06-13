@@ -113,7 +113,7 @@
                                             </td>
                                             <td>
                                                 {% if transaction.transaction_type == 'increment' %}
-                                                    ${{ "{:,.0f}"|format(transaction.amount) if transaction.amount else '0' }} increase
+                                                    ${{ "{:,.0f}".format(transaction.amount) if transaction.amount else '0' }} increase
                                                 {% elif transaction.transaction_type == 'promotion' %}
                                                     {{ transaction.previous_position }} → {{ transaction.new_position }}
                                                 {% elif transaction.transaction_type == 'joining' %}

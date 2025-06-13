@@ -55,6 +55,27 @@ class WellnessCheck(db.Model):
     check_date = db.Column(db.DateTime, default=datetime.utcnow)
     employee = db.relationship('Employee', backref=db.backref('wellness_checks', lazy=True))
 
+class HealthMetrics(db.Model):
+    """Comprehensive health metrics for employees"""
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
+    bmi = db.Column(db.Float)
+    bmi_status = db.Column(db.String(20))  # Normal, Overweight, Obese, Underweight
+    blood_pressure = db.Column(db.String(20))  # e.g., "120/80"
+    bp_status = db.Column(db.String(20))  # Normal, Elevated
+    avg_daily_steps = db.Column(db.Integer)
+    avg_sleep_hours = db.Column(db.Float)
+    stress_level = db.Column(db.Integer)  # 1-10
+    stress_status = db.Column(db.String(20))  # Low, Moderate, High
+    mood_score = db.Column(db.Integer)  # 1-10
+    mood_status = db.Column(db.String(20))  # Positive, Neutral, Negative
+    recommendations = db.Column(Text)  # JSON string of recommendations
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    employee = db.relationship('Employee', backref=db.backref('health_metrics', lazy=True))
+    
+    def __init__(self, **kwargs):
+        super(HealthMetrics, self).__init__(**kwargs)
+
 class PerformanceReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)

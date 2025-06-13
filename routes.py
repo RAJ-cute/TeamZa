@@ -1,6 +1,6 @@
 from flask import render_template, request, jsonify, flash, redirect, url_for
 from app import app, db
-from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview, HRTransaction, EmployeeHistory, CompanyMetrics
+from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview, HRTransaction, EmployeeHistory, CompanyMetrics, HealthMetrics
 from utils.nlp_processor import NLPProcessor
 from utils.hr_analytics import HRAnalytics
 from utils.document_parser import DocumentParser
@@ -284,33 +284,50 @@ def skill_gap_analysis():
 @app.route('/wellness-tracker', methods=['GET', 'POST'])
 def wellness_tracker():
     """HR Employee Wellness Management - View and manage all employee wellness data"""
+    from utils.health_generator import HealthDataGenerator
+    health_gen = HealthDataGenerator()
+    
     if request.method == 'POST':
-        employee_id = request.form.get('employee_id')
-        stress_level = int(request.form.get('stress_level', 5))
-        sleep_quality = int(request.form.get('sleep_quality', 5))
-        focus_level = int(request.form.get('focus_level', 5))
+        action = request.form.get('action')
+        
+        if action == 'generate_health_data':
+            # Generate comprehensive health data for all employees
+            generated_count = health_gen.generate_for_all_employees()
+            flash(f'Generated health data for {generated_count} employees', 'success')
+            return redirect(url_for('wellness_tracker'))
+            
+        elif action == 'add_wellness_check':
+            employee_id = request.form.get('employee_id')
+            stress_level = int(request.form.get('stress_level', 5))
+            sleep_quality = int(request.form.get('sleep_quality', 5))
+            focus_level = int(request.form.get('focus_level', 5))
 
-        # Calculate overall wellness
-        wellness_score = hr_analytics.calculate_wellness_score(stress_level, sleep_quality, focus_level)
-        wellness_status = hr_analytics.get_wellness_status(wellness_score)
-        recommendations = hr_analytics.get_wellness_recommendations(wellness_status, stress_level, sleep_quality, focus_level)
+            # Calculate overall wellness
+            wellness_score = hr_analytics.calculate_wellness_score(stress_level, sleep_quality, focus_level)
+            wellness_status = hr_analytics.get_wellness_status(wellness_score)
+            recommendations = hr_analytics.get_wellness_recommendations(wellness_status, stress_level, sleep_quality, focus_level)
 
-        # Save wellness check
-        wellness_check = WellnessCheck()
-        wellness_check.employee_id = employee_id
-        wellness_check.stress_level = stress_level
-        wellness_check.sleep_quality = sleep_quality
-        wellness_check.focus_level = focus_level
-        wellness_check.overall_wellness = wellness_status
-        wellness_check.recommendations = json.dumps(recommendations)
-        db.session.add(wellness_check)
-        db.session.commit()
+            # Save wellness check
+            wellness_check = WellnessCheck()
+            wellness_check.employee_id = employee_id
+            wellness_check.stress_level = stress_level
+            wellness_check.sleep_quality = sleep_quality
+            wellness_check.focus_level = focus_level
+            wellness_check.overall_wellness = wellness_status
+            wellness_check.recommendations = json.dumps(recommendations)
+            db.session.add(wellness_check)
+            db.session.commit()
 
-        flash('Wellness check recorded successfully', 'success')
-        return redirect(url_for('wellness_tracker'))
+            flash('Wellness check recorded successfully', 'success')
+            return redirect(url_for('wellness_tracker'))
 
-    # Get all employees with their latest wellness data
-    employees = Employee.query.all()
+    # Get comprehensive health overview
+    health_overview = health_gen.get_health_overview()
+    
+    # Get all employees with their health metrics
+    employees_with_health = db.session.query(Employee, HealthMetrics).outerjoin(HealthMetrics).all()
+    
+    # Get recent wellness checks
     recent_checks = WellnessCheck.query.order_by(WellnessCheck.check_date.desc()).limit(20).all()
 
     # Wellness statistics
@@ -328,13 +345,14 @@ def wellness_tracker():
     ).distinct().all()
 
     return render_template('wellness_tracker.html', 
-                         employees=employees,
+                         employees_with_health=employees_with_health,
                          recent_checks=recent_checks,
                          total_checks=total_checks,
                          green_status=green_status,
                          yellow_status=yellow_status,
                          red_status=red_status,
-                         concern_employees=concern_employees)
+                         concern_employees=concern_employees,
+                         health_overview=health_overview)
 
 @app.route('/hr-insights')
 def hr_insights():
@@ -368,6 +386,12 @@ def hr_insights():
         'red_status': WellnessCheck.query.filter_by(overall_wellness='red').count()
     }
 
+    # Add missing increment data
+    increment_data = {
+        'total_increments': HRTransaction.query.filter_by(transaction_type='increment').count(),
+        'avg_increment': db.session.query(db.func.avg(HRTransaction.percentage)).filter_by(transaction_type='increment').scalar() or 0
+    }
+    
     return render_template('hr_insights.html',
                          total_employees=total_employees,
                          dept_stats=dept_stats,
@@ -376,6 +400,7 @@ def hr_insights():
                          monthly_trends=monthly_trends,
                          wellness_summary=wellness_summary,
                          insights_data=insights_data,
+                         increment_data=increment_data,
                          employees=employees)
 
 @app.route('/hr-data-management', methods=['GET', 'POST'])
