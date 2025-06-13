@@ -16,6 +16,14 @@ def from_json_filter(value):
     except (json.JSONDecodeError, TypeError):
         return []
 
+@app.template_filter('tojsonfilter')
+def to_json_filter(value):
+    """Convert Python object to JSON string"""
+    try:
+        return json.dumps(value)
+    except (TypeError, ValueError):
+        return 'null'
+
 # Database configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "hr_platform.db")}'
