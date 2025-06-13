@@ -22,8 +22,18 @@ document_parser = DocumentParser()
 mock_data_gen = MockDataGenerator()
 real_data_loader = RealDataLoader() if RealDataLoader else None
 
+@app.route('/hr-command-center')
+def hr_command_center():
+    """3D Interactive HR Command Center Entry Point"""
+    return render_template('hr_command_center.html')
+
 @app.route('/')
 def index():
+    """Redirect to 3D HR Command Center"""
+    return redirect(url_for('hr_command_center'))
+
+@app.route('/dashboard')
+def dashboard():
     """HR Management Dashboard showing overview of all employee data"""
     # Get comprehensive HR stats for dashboard
     total_employees = Employee.query.count()
