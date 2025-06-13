@@ -364,7 +364,8 @@ def hr_insights():
     employees = Employee.query.filter_by(status='active').all()
     
     # Department distribution
-    dept_stats = db.session.query(Employee.department, db.func.count(Employee.id)).group_by(Employee.department).all()
+    dept_stats_raw = db.session.query(Employee.department, db.func.count(Employee.id)).group_by(Employee.department).all()
+    dept_stats = [{'department': dept, 'count': count} for dept, count in dept_stats_raw]
     
     # Performance data
     avg_performance = db.session.query(db.func.avg(Employee.performance_score)).scalar() or 0
@@ -403,9 +404,21 @@ def hr_insights():
         'left_this_year': HRTransaction.query.filter_by(transaction_type='exit').count()
     }
     
+    # Generate performance data for charts
+    performance_data = {
+        'average': round(avg_performance, 2),
+        'distribution': {
+            'excellent': Employee.query.filter(Employee.performance_score >= 9).count(),
+            'good': Employee.query.filter(Employee.performance_score >= 7, Employee.performance_score < 9).count(),
+            'average': Employee.query.filter(Employee.performance_score >= 5, Employee.performance_score < 7).count(),
+            'needs_improvement': Employee.query.filter(Employee.performance_score < 5).count()
+        }
+    }
+    
     return render_template('hr_insights.html',
                          total_employees=total_employees,
                          dept_stats=dept_stats,
+                         performance_data=performance_data,
                          avg_performance=avg_performance,
                          top_performers=top_performers,
                          monthly_trends=monthly_trends,
