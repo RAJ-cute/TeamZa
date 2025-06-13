@@ -3,50 +3,51 @@
 {% block title %}HR Dashboard - HR Management Portal{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="display-4 mb-4">
-            <i class="fas fa-user-tie me-3"></i>HR Management Dashboard
-        </h1>
-        <p class="lead text-muted">Comprehensive employee data management and analytics for HR professionals</p>
+<!-- Modern Page Header -->
+<div class="page-header fade-in">
+    <div class="container">
+        <h1><i class="fas fa-user-tie me-3"></i>HR Management Dashboard</h1>
+        <p>Comprehensive employee data management and analytics for HR professionals</p>
     </div>
 </div>
 
-<!-- Quick Stats -->
+<div class="container">
+
+<!-- Modern Dashboard Stats -->
 <div class="row mb-5">
-    <div class="col-md-3 mb-3">
-        <div class="card bg-primary">
-            <div class="card-body text-center">
-                <i class="fas fa-users fa-2x mb-2"></i>
-                <h3 class="card-title">{{ total_employees }}</h3>
-                <p class="card-text">Total Employees</p>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-primary fade-in dashboard-stat" style="animation-delay: 0.1s;">
+            <div class="card-body">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h3>{{ total_employees }}</h3>
+                <p>Total Employees</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-info">
-            <div class="card-body text-center">
-                <i class="fas fa-file-alt fa-2x mb-2"></i>
-                <h3 class="card-title">{{ total_resumes }}</h3>
-                <p class="card-text">Resumes Processed</p>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-info fade-in dashboard-stat" style="animation-delay: 0.2s;">
+            <div class="card-body">
+                <i class="fas fa-file-alt fa-3x mb-3"></i>
+                <h3>{{ total_resumes }}</h3>
+                <p>Resumes Processed</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-warning">
-            <div class="card-body text-center">
-                <i class="fas fa-graduation-cap fa-2x mb-2"></i>
-                <h3 class="card-title">{{ active_learning }}</h3>
-                <p class="card-text">Active Learning</p>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-warning fade-in dashboard-stat" style="animation-delay: 0.3s;">
+            <div class="card-body">
+                <i class="fas fa-graduation-cap fa-3x mb-3"></i>
+                <h3>{{ active_learning }}</h3>
+                <p>Active Learning</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-success">
-            <div class="card-body text-center">
-                <i class="fas fa-heart fa-2x mb-2"></i>
-                <h3 class="card-title">{{ recent_wellness|length }}</h3>
-                <p class="card-text">Wellness Checks</p>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-success fade-in dashboard-stat" style="animation-delay: 0.4s;">
+            <div class="card-body">
+                <i class="fas fa-heart fa-3x mb-3"></i>
+                <h3>{{ recent_wellness|length }}</h3>
+                <p>Wellness Checks</p>
             </div>
         </div>
     </div>
