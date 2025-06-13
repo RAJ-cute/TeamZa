@@ -191,22 +191,22 @@ def leadership_potential():
         "Ms. Dhruti Chand (Managing Director)", 
         "Ms. Pratibha Sharma (Recruitment Officer)"
     ]
-    
+
     # Analyze leadership potential
     leadership_candidates = []
     reviewer_usage = {reviewer: 0 for reviewer in reviewers}
-    
+
     for employee in employees:
         potential_score = hr_analytics.calculate_leadership_potential(employee)
         if potential_score > 7.0:  # High potential threshold
             growth_actions = hr_analytics.suggest_growth_actions(employee, potential_score)
-            
+
             # Generate review based on manager rating
             manager_rating = employee.manager_rating or 7.0
             review_data = hr_analytics.generate_performance_review_with_reviewer(
                 employee, manager_rating, reviewers, reviewer_usage
             )
-            
+
             # Serialize employee data
             employee_data = {
                 'id': employee.id,
@@ -220,7 +220,7 @@ def leadership_potential():
                 'experience_years': employee.experience_years,
                 'skills': employee.skills
             }
-            
+
             leadership_candidates.append({
                 'employee': employee_data,
                 'potential_score': potential_score,
@@ -273,25 +273,25 @@ def learning_module():
 def skill_gap_analysis():
     """Employee-based skill gap analysis module"""
     employees = Employee.query.order_by(Employee.name).all()
-    
+
     if request.method == 'POST':
         employee_name = request.form.get('employee_name')
-        
+
         if employee_name:
             # Find the employee
             employee = Employee.query.filter_by(name=employee_name).first()
-            
+
             if employee:
                 # Analyze skill gaps using the new approach
                 employee_analysis = hr_analytics.analyze_employee_skill_gaps(employee)
-                
+
                 return render_template('skill_gap_analysis.html', 
                                      employees=employees,
                                      employee_analysis=employee_analysis,
                                      selected_employee=employee_name)
             else:
                 flash('Employee not found', 'error')
-    
+
     return render_template('skill_gap_analysis.html', employees=employees)
 
 @app.route('/wellness-tracker', methods=['GET', 'POST'])
@@ -351,11 +351,113 @@ def wellness_tracker():
 
 @app.route('/hr-insights')
 def hr_insights():
-    """Unified HR insights dashboard"""
-    # Generate comprehensive HR analytics
-    insights = hr_analytics.generate_hr_insights()
+    """Comprehensive HR Insights Dashboard with Company and Individual Analytics"""
+    from datetime import datetime, timedelta
+    import random
 
-    return render_template('hr_insights.html', insights=insights)
+    # Get all employees
+    employees = Employee.query.all()
+
+    # Company-wide insights
+    total_employees = len(employees)
+
+    # Department distribution
+    dept_stats = {}
+    for emp in employees:
+        dept_stats[emp.department] = dept_stats.get(emp.department, 0) + 1
+
+    # Performance metrics
+    if employees:
+        avg_performance = sum(emp.performance_score or 7.0 for emp in employees) / len(employees)
+        top_performers = [emp for emp in employees if (emp.performance_score or 7.0) >= 8.5]
+    else:
+        avg_performance = 0
+        top_performers = []
+
+    # Mock increment data (in real scenario, this would come from HR records)
+    increment_data = {
+        'total_increments': random.randint(15, 25),
+        'avg_increment_percent': random.uniform(8, 15),
+        'increment_by_dept': {dept: random.randint(2, 5) for dept in dept_stats.keys()}
+    }
+
+    # Mock joining/leaving data
+    joining_leaving_data = {
+        'joined_this_year': random.randint(8, 15),
+        'left_this_year': random.randint(2, 8),
+        'net_growth': 0
+    }
+    joining_leaving_data['net_growth'] = joining_leaving_data['joined_this_year'] - joining_leaving_data['left_this_year']
+
+    # Employee leaderboard based on performance
+    employee_leaderboard = sorted(
+        [(emp.name, emp.performance_score or 7.0, emp.department) for emp in employees],
+        key=lambda x: x[1], reverse=True
+    )[:10]
+
+    # Monthly trends (mock data)
+    monthly_trends = {
+        'performance': [
+            {'month': 'Jan', 'avg_score': 7.8},
+            {'month': 'Feb', 'avg_score': 8.1},
+            {'month': 'Mar', 'avg_score': 8.3},
+            {'month': 'Apr', 'avg_score': 8.0},
+            {'month': 'May', 'avg_score': 8.4},
+            {'month': 'Jun', 'avg_score': 8.6}
+        ],
+        'headcount': [
+            {'month': 'Jan', 'count': total_employees - 5},
+            {'month': 'Feb', 'count': total_employees - 3},
+            {'month': 'Mar', 'count': total_employees - 2},
+            {'month': 'Apr', 'count': total_employees - 1},
+            {'month': 'May', 'count': total_employees},
+            {'month': 'Jun', 'count': total_employees + 2}
+        ]
+    }
+
+    # Wellness overview
+    wellness_summary = {
+        'green': random.randint(60, 80),
+        'yellow': random.randint(15, 25),
+        'red': random.randint(5, 15)
+    }
+
+    # Prepare data for Excel export
+    export_data = {
+        'company_summary': {
+            'total_employees': total_employees,
+            'departments': dept_stats,
+            'avg_performance': round(avg_performance, 2),
+            'increments': increment_data,
+            'joining_leaving': joining_leaving_data
+        },
+        'employee_details': [
+            {
+                'name': emp.name,
+                'department': emp.department,
+                'position': emp.position,
+                'performance_score': emp.performance_score or 7.0,
+                'hire_date': emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else 'N/A',
+                'last_increment': emp.last_hike_date or 'N/A',
+                'manager_rating': emp.manager_rating or 7.0,
+                'skill_gaps': emp.skill_gaps or 'None identified'
+            }
+            for emp in employees
+        ]
+    }
+
+    return render_template('hr_insights.html',
+                         total_employees=total_employees,
+                         dept_stats=dept_stats,
+                         avg_performance=round(avg_performance, 2),
+                         top_performers=top_performers,
+                         increment_data=increment_data,
+                         joining_leaving_data=joining_leaving_data,
+                         employee_leaderboard=employee_leaderboard,
+                         monthly_trends=monthly_trends,
+                         wellness_summary=wellness_summary,
+                         employees=employees,
+                         export_data=export_data)
 
 @app.route('/api/quiz/<module_name>')
 def get_quiz(module_name):

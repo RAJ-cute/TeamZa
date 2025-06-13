@@ -1,0 +1,286 @@
+
+{% extends "base.html" %}
+
+{% block title %}HR Data Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-database text-primary"></i> HR Data Management</h2>
+            <p class="text-muted">Manage employee data, increments, promotions, and performance updates</p>
+
+            <!-- Navigation Pills -->
+            <ul class="nav nav-pills mb-4" id="hrDataTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="increment-tab" data-bs-toggle="pill" data-bs-target="#increment" type="button" role="tab">
+                        <i class="fas fa-arrow-up"></i> Record Increment
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="promotion-tab" data-bs-toggle="pill" data-bs-target="#promotion" type="button" role="tab">
+                        <i class="fas fa-level-up-alt"></i> Record Promotion
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="performance-tab" data-bs-toggle="pill" data-bs-target="#performance" type="button" role="tab">
+                        <i class="fas fa-chart-line"></i> Update Performance
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="add-employee-tab" data-bs-toggle="pill" data-bs-target="#add-employee" type="button" role="tab">
+                        <i class="fas fa-user-plus"></i> Add Employee
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="hrDataTabContent">
+                
+                <!-- Record Increment -->
+                <div class="tab-pane fade show active" id="increment" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-arrow-up"></i> Record Employee Increment</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <input type="hidden" name="action" value="add_increment">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="employee_id" class="form-label">Select Employee</label>
+                                            <select class="form-select" name="employee_id" required>
+                                                <option value="">Choose employee...</option>
+                                                {% for employee in employees %}
+                                                <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="increment_amount" class="form-label">Increment Amount (%)</label>
+                                            <input type="number" class="form-control" name="increment_amount" step="0.1" min="0" max="100" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="increment_date" class="form-label">Increment Date</label>
+                                            <input type="date" class="form-control" name="increment_date" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Record Increment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Record Promotion -->
+                <div class="tab-pane fade" id="promotion" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-level-up-alt"></i> Record Employee Promotion</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <input type="hidden" name="action" value="add_promotion">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="employee_id" class="form-label">Select Employee</label>
+                                            <select class="form-select" name="employee_id" required>
+                                                <option value="">Choose employee...</option>
+                                                {% for employee in employees %}
+                                                <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.position }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="new_position" class="form-label">New Position</label>
+                                            <input type="text" class="form-control" name="new_position" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="promotion_date" class="form-label">Promotion Date</label>
+                                            <input type="date" class="form-control" name="promotion_date" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Record Promotion
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Performance -->
+                <div class="tab-pane fade" id="performance" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line"></i> Update Employee Performance</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <input type="hidden" name="action" value="update_performance">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="employee_id" class="form-label">Select Employee</label>
+                                            <select class="form-select" name="employee_id" required>
+                                                <option value="">Choose employee...</option>
+                                                {% for employee in employees %}
+                                                <option value="{{ employee.id }}">{{ employee.name }} - Current: {{ employee.performance_score or 'N/A' }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="performance_score" class="form-label">Performance Score (1-10)</label>
+                                            <input type="number" class="form-control" name="performance_score" min="1" max="10" step="0.1" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="manager_rating" class="form-label">Manager Rating (1-10)</label>
+                                            <input type="number" class="form-control" name="manager_rating" min="1" max="10" step="0.1" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save"></i> Update Performance
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Employee -->
+                <div class="tab-pane fade" id="add-employee" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-plus"></i> Add New Employee</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <input type="hidden" name="action" value="add_employee">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Full Name</label>
+                                            <input type="text" class="form-control" name="name" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" name="email" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="department" class="form-label">Department</label>
+                                            <select class="form-select" name="department" required>
+                                                <option value="">Choose department...</option>
+                                                {% for dept in departments %}
+                                                <option value="{{ dept }}">{{ dept }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="position" class="form-label">Position</label>
+                                            <input type="text" class="form-control" name="position" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="hire_date" class="form-label">Hire Date</label>
+                                            <input type="date" class="form-control" name="hire_date" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-user-plus"></i> Add Employee
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Data Changes -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-history"></i> Recent Employee Updates</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Performance</th>
+                                            <th>Last Increment</th>
+                                            <th>Last Promotion</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for employee in employees %}
+                                        <tr>
+                                            <td>{{ employee.name }}</td>
+                                            <td>{{ employee.department }}</td>
+                                            <td>{{ employee.position }}</td>
+                                            <td>
+                                                <span class="badge bg-{% if (employee.performance_score or 7) >= 8 %}success{% elif (employee.performance_score or 7) >= 6 %}warning{% else %}danger{% endif %}">
+                                                    {{ employee.performance_score or 7 }}/10
+                                                </span>
+                                            </td>
+                                            <td>{{ employee.last_hike_date or 'No data' }}</td>
+                                            <td>{{ employee.last_promotion_date or 'No data' }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" onclick="editEmployee({{ employee.id }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <a href="{{ url_for('employee_profile', employee_id=employee.id) }}" class="btn btn-outline-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editEmployee(employeeId) {
+    // You can implement quick edit functionality here
+    alert('Quick edit feature - Employee ID: ' + employeeId);
+}
+</script>
+{% endblock %}
