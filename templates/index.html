@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}TeamZa - HR Management Dashboard{% endblock %}
+{% block title %}<img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" style="height: 16px; width: auto;"> TeamZa - HR Management Dashboard{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -11,7 +11,7 @@
                 <div class="card-body text-center py-5">
                     <img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa Logo" style="height: 100px; width: auto; margin-bottom: 20px;" onerror="this.style.display='none';">
                     <h1 class="display-4 mb-3">
-                        <i class="fas fa-tachometer-alt me-3"></i>TeamZa HR Dashboard
+                        <i class="fas fa-tachometer-alt me-3"></i><img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" style="height: 40px; width: auto; margin-right: 10px; vertical-align: middle;"> TeamZa HR Dashboard
                     </h1>
                     <p class="lead">Comprehensive HR Management & Analytics Platform</p>
                 </div>
