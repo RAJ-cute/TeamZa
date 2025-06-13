@@ -383,7 +383,12 @@ def hr_insights():
         'total_checks': WellnessCheck.query.count(),
         'green_status': WellnessCheck.query.filter_by(overall_wellness='green').count(),
         'yellow_status': WellnessCheck.query.filter_by(overall_wellness='yellow').count(),
-        'red_status': WellnessCheck.query.filter_by(overall_wellness='red').count()
+        'red_status': WellnessCheck.query.filter_by(overall_wellness='red').count(),
+        'distribution': {
+            'green': WellnessCheck.query.filter_by(overall_wellness='green').count(),
+            'yellow': WellnessCheck.query.filter_by(overall_wellness='yellow').count(),
+            'red': WellnessCheck.query.filter_by(overall_wellness='red').count()
+        }
     }
 
     # Add missing increment data

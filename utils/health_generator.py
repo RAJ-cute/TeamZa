@@ -52,11 +52,10 @@ class HealthDataGenerator:
         else:
             mood_status = "Negative"
         
-        # Generate recommendations
+        # Generate personalized recommendations
         recommendations = self._generate_recommendations(job_role, age, bmi_status, stress_status)
         
         return {
-            "employee_id": employee.id,
             "bmi": bmi,
             "bmi_status": bmi_status,
             "blood_pressure": blood_pressure,
@@ -67,7 +66,7 @@ class HealthDataGenerator:
             "stress_status": stress_status,
             "mood_score": mood_score,
             "mood_status": mood_status,
-            "recommendations": json.dumps(recommendations)
+            "recommendations": recommendations
         }
     
     def _generate_recommendations(self, job_role, age, bmi_status, stress_status):
@@ -90,9 +89,6 @@ class HealthDataGenerator:
         elif "Data Analyst" in job_role:
             recommendations.append("Take micro-breaks every hour to prevent repetitive strain injuries")
             recommendations.append("Try desk exercises to improve circulation during long analysis sessions")
-        else:
-            recommendations.append("Maintain good posture and take regular breaks during work hours")
-            recommendations.append("Stay hydrated and maintain regular meal times")
         
         # Age-specific recommendations
         if age > 40:
@@ -101,8 +97,6 @@ class HealthDataGenerator:
         elif age > 30:
             recommendations.append("Schedule preventive health screenings")
             recommendations.append("Maintain work-life balance to prevent burnout")
-        else:
-            recommendations.append("Establish healthy habits early for long-term wellness")
         
         # BMI-specific recommendations
         if bmi_status in ["Overweight", "Obese"]:
@@ -120,40 +114,66 @@ class HealthDataGenerator:
     
     def generate_for_all_employees(self):
         """Generate health data for all employees who don't have it"""
-        employees = Employee.query.all()
-        generated_count = 0
+        employees_without_health = Employee.query.filter(
+            ~Employee.id.in_(db.session.query(HealthMetrics.employee_id))
+        ).all()
         
-        for employee in employees:
-            # Check if employee already has health metrics
-            existing_metrics = HealthMetrics.query.filter_by(employee_id=employee.id).first()
-            if not existing_metrics:
-                health_data = self.generate_health_data(employee)
-                health_metrics = HealthMetrics(**health_data)
-                db.session.add(health_metrics)
-                generated_count += 1
+        generated_count = 0
+        for employee in employees_without_health:
+            health_data = self.generate_health_data(employee)
+            
+            # Create HealthMetrics record
+            health_metrics = HealthMetrics(
+                employee_id=employee.id,
+                bmi=health_data['bmi'],
+                bmi_status=health_data['bmi_status'],
+                blood_pressure=health_data['blood_pressure'],
+                bp_status=health_data['bp_status'],
+                avg_daily_steps=health_data['avg_daily_steps'],
+                avg_sleep_hours=health_data['avg_sleep_hours'],
+                stress_level=health_data['stress_level'],
+                stress_status=health_data['stress_status'],
+                mood_score=health_data['mood_score'],
+                mood_status=health_data['mood_status'],
+                recommendations=json.dumps(health_data['recommendations'])
+            )
+            
+            db.session.add(health_metrics)
+            generated_count += 1
         
         db.session.commit()
         return generated_count
     
     def get_health_overview(self):
         """Get overall health statistics for all employees"""
-        all_metrics = HealthMetrics.query.all()
-        if not all_metrics:
-            return {}
+        total_employees = Employee.query.count()
+        employees_with_health = db.session.query(HealthMetrics.employee_id).distinct().count()
         
-        normal_bmi = len([m for m in all_metrics if m.bmi_status == 'Normal'])
-        normal_bp = len([m for m in all_metrics if m.bp_status == 'Normal'])
-        low_stress = len([m for m in all_metrics if m.stress_status == 'Low'])
-        positive_mood = len([m for m in all_metrics if m.mood_status == 'Positive'])
+        # BMI distribution
+        bmi_stats = {
+            'normal': HealthMetrics.query.filter_by(bmi_status='Normal').count(),
+            'overweight': HealthMetrics.query.filter_by(bmi_status='Overweight').count(),
+            'obese': HealthMetrics.query.filter_by(bmi_status='Obese').count(),
+            'underweight': HealthMetrics.query.filter_by(bmi_status='Underweight').count()
+        }
+        
+        # Stress distribution
+        stress_stats = {
+            'low': HealthMetrics.query.filter_by(stress_status='Low').count(),
+            'moderate': HealthMetrics.query.filter_by(stress_status='Moderate').count(),
+            'high': HealthMetrics.query.filter_by(stress_status='High').count()
+        }
+        
+        # Blood pressure distribution
+        bp_stats = {
+            'normal': HealthMetrics.query.filter_by(bp_status='Normal').count(),
+            'elevated': HealthMetrics.query.filter_by(bp_status='Elevated').count()
+        }
         
         return {
-            'total_employees': len(all_metrics),
-            'normal_bmi_count': normal_bmi,
-            'normal_bp_count': normal_bp,
-            'low_stress_count': low_stress,
-            'positive_mood_count': positive_mood,
-            'normal_bmi_percent': round((normal_bmi / len(all_metrics)) * 100, 1),
-            'normal_bp_percent': round((normal_bp / len(all_metrics)) * 100, 1),
-            'low_stress_percent': round((low_stress / len(all_metrics)) * 100, 1),
-            'positive_mood_percent': round((positive_mood / len(all_metrics)) * 100, 1)
+            'total_employees': total_employees,
+            'employees_with_health_data': employees_with_health,
+            'bmi_distribution': bmi_stats,
+            'stress_distribution': stress_stats,
+            'bp_distribution': bp_stats
         }
