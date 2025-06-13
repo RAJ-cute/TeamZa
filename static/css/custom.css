@@ -723,61 +723,354 @@ body.modern-layout {
     color: var(--text-primary);
 }
 
-/* Ensure all text is visible */
-h1, h2, h3, h4, h5, h6, p, span, div, td, th, li, a {
+/* COMPREHENSIVE TEXT VISIBILITY FIXES */
+
+/* Ensure ALL text elements are visible */
+*, *::before, *::after {
     color: var(--text-primary) !important;
 }
 
-/* Specific overrides for better visibility */
-.text-dark {
+/* Reset all text colors to be visible */
+h1, h2, h3, h4, h5, h6, p, span, div, td, th, li, a, label, small, code, pre, strong, em, b, i, u {
+    color: var(--text-primary) !important;
+}
+
+/* Force visibility for all Bootstrap text classes */
+.text-dark, .text-light, .text-white, .text-black {
     color: var(--text-primary) !important;
 }
 
 .text-muted {
     color: var(--text-muted) !important;
-    opacity: 0.8;
+    opacity: 1 !important;
 }
 
-.card-text {
+.text-secondary {
     color: var(--text-secondary) !important;
 }
 
-/* Make sure buttons are visible */
-.btn {
-    border: 1px solid transparent;
+.text-primary {
+    color: var(--primary-color) !important;
 }
 
-.btn-outline-secondary {
-    border-color: var(--text-muted);
-    color: var(--text-primary);
+.text-success {
+    color: #10b981 !important;
 }
 
-.btn-outline-secondary:hover {
-    background: var(--text-muted);
-    color: var(--bg-primary);
+.text-warning {
+    color: #f59e0b !important;
 }
 
-/* Fix list group items */
-.list-group-item {
-    background: var(--bg-primary);
-    border-color: var(--border-color);
-    color: var(--text-primary);
+.text-danger {
+    color: #ef4444 !important;
 }
 
-/* Fix any remaining white text on white background issues */
-.text-white {
+.text-info {
+    color: #06b6d4 !important;
+}
+
+/* Card text visibility */
+.card-text, .card-title, .card-subtitle {
     color: var(--text-primary) !important;
 }
 
-/* Ensure input text is visible */
-input, textarea, select {
+/* Table text visibility */
+.table td, .table th, .table-dark td, .table-dark th {
+    color: var(--text-primary) !important;
+}
+
+/* Form elements visibility */
+input, textarea, select, .form-control, .form-select {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.form-control::placeholder, .form-select::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.8 !important;
+}
+
+.form-label, .form-text {
+    color: var(--text-primary) !important;
+}
+
+/* Button text visibility */
+.btn {
+    border: 1px solid transparent !important;
+}
+
+.btn-primary {
+    color: white !important;
+}
+
+.btn-secondary {
+    color: var(--text-primary) !important;
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.btn-outline-secondary {
+    border-color: var(--text-muted) !important;
+    color: var(--text-primary) !important;
+    background: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--text-muted) !important;
+    color: var(--bg-primary) !important;
+}
+
+/* List items visibility */
+.list-group-item {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.list-group-item-action {
+    color: var(--text-primary) !important;
+}
+
+.list-group-item-action:hover {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Navigation text visibility */
+.nav-link {
+    color: var(--text-primary) !important;
+}
+
+.nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* Badge text visibility */
+.badge {
+    color: white !important;
+}
+
+.badge-light {
+    color: var(--bg-primary) !important;
+    background: var(--text-primary) !important;
+}
+
+/* Alert text visibility */
+.alert {
+    color: var(--text-primary) !important;
+}
+
+/* Modal text visibility */
+.modal-content {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-header, .modal-body, .modal-footer {
+    color: var(--text-primary) !important;
+}
+
+.modal-title {
+    color: var(--text-primary) !important;
+}
+
+/* Breadcrumb visibility */
+.breadcrumb-item {
+    color: var(--text-secondary) !important;
+}
+
+.breadcrumb-item.active {
+    color: var(--text-primary) !important;
+}
+
+/* Pagination visibility */
+.page-link {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.page-link:hover {
+    color: var(--primary-color) !important;
+    background: var(--bg-secondary) !important;
+}
+
+/* Tooltip and popover visibility */
+.tooltip-inner {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.popover {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.popover-header {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.popover-body {
+    color: var(--text-primary) !important;
+}
+
+/* Tab content visibility */
+.tab-content {
+    color: var(--text-primary) !important;
+}
+
+.tab-pane {
+    color: var(--text-primary) !important;
+}
+
+/* Progress bar text visibility */
+.progress-bar {
+    color: white !important;
+}
+
+/* Offcanvas visibility */
+.offcanvas {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.offcanvas-header, .offcanvas-body {
+    color: var(--text-primary) !important;
+}
+
+/* Accordion visibility */
+.accordion-item {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.accordion-header {
+    color: var(--text-primary) !important;
+}
+
+.accordion-body {
     color: var(--text-primary) !important;
     background: var(--bg-primary) !important;
 }
 
-.form-control::placeholder {
-    color: var(--text-muted);
-    opacity: 0.8;
+.accordion-button {
+    color: var(--text-primary) !important;
+    background: var(--bg-secondary) !important;
+}
+
+/* Carousel visibility */
+.carousel-caption {
+    color: var(--text-primary) !important;
+}
+
+.carousel-indicators [data-bs-target] {
+    background: var(--text-muted) !important;
+}
+
+/* Toast visibility */
+.toast {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.toast-header {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.toast-body {
+    color: var(--text-primary) !important;
+}
+
+/* Spinner visibility */
+.spinner-border, .spinner-grow {
+    color: var(--primary-color) !important;
+}
+
+/* Custom dashboard elements */
+.stats-number {
+    color: var(--primary-color) !important;
+}
+
+.stats-label {
+    color: var(--text-secondary) !important;
+}
+
+.activity-title {
+    color: var(--text-primary) !important;
+}
+
+.activity-subtitle {
+    color: var(--text-secondary) !important;
+}
+
+.activity-time {
+    color: var(--text-muted) !important;
+}
+
+/* Employee cards */
+.employee-card h5, .employee-card h6, .employee-card p {
+    color: var(--text-primary) !important;
+}
+
+/* Override any remaining problematic styles */
+[class*="text-"] {
+    color: var(--text-primary) !important;
+}
+
+/* Ensure visibility for any custom classes */
+.fade, .show {
+    color: var(--text-primary) !important;
+}
+
+/* Final catch-all for visibility */
+body * {
+    color: var(--text-primary) !important;
+}
+
+/* But keep specific colored elements */
+.btn-primary, .btn-primary * {
+    color: white !important;
+}
+
+.btn-success, .btn-success * {
+    color: white !important;
+}
+
+.btn-warning, .btn-warning * {
+    color: white !important;
+}
+
+.btn-danger, .btn-danger * {
+    color: white !important;
+}
+
+.btn-info, .btn-info * {
+    color: white !important;
+}
+
+.badge, .badge * {
+    color: white !important;
+}
+
+/* Special fixes for specific components */
+.nav-item.active .nav-text {
+    color: var(--primary-color) !important;
+}
+
+.search-input {
+    color: var(--text-primary) !important;
+    background: var(--bg-tertiary) !important;
+}
+
+.search-input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.profile-name {
+    color: var(--text-primary) !important;
 }
 
 /* Enhanced table visibility */
