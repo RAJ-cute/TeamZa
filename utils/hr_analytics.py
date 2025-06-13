@@ -166,10 +166,40 @@ class HRAnalytics:
     
     def generate_hr_insights(self):
         """Generate comprehensive HR insights"""
+        from app import db
+        from sqlalchemy import case
+        
+        # Basic statistics
+        total_employees = Employee.query.count()
+        departments = db.session.query(Employee.department, db.func.count(Employee.id)).group_by(Employee.department).all()
+        
+        # Performance distribution
+        performance_data = db.session.query(Employee.performance_score).all()
+        avg_performance = sum(score[0] for score in performance_data if score[0]) / len(performance_data) if performance_data else 0
+        
+        # Wellness trends
+        wellness_checks = WellnessCheck.query.order_by(WellnessCheck.check_date.desc()).limit(30).all()
+        wellness_distribution = {'green': 0, 'yellow': 0, 'red': 0}
+        for check in wellness_checks:
+            wellness_distribution[check.overall_wellness] += 1
+        
+        # Learning engagement
+        total_learning = LearningProgress.query.count()
+        completed_learning = LearningProgress.query.filter_by(completed=True).count()
+        completion_rate = (completed_learning / total_learning * 100) if total_learning else 0
+        
         return {
-            'total_insights': 5,
+            'total_employees': total_employees,
+            'departments': dict(departments),
+            'avg_performance': round(avg_performance, 2),
+            'wellness_distribution': wellness_distribution,
+            'learning_completion_rate': round(completion_rate, 2),
             'key_metrics': ['Performance', 'Wellness', 'Skills', 'Leadership'],
-            'recommendations': ['Increase training', 'Improve wellness programs']
+            'recommendations': [
+                'Continue monitoring performance trends',
+                'Expand wellness programs based on current metrics',
+                'Increase learning module engagement'
+            ]
         }
     
     def generate_appraisal_insights(self, reviews):
@@ -187,80 +217,6 @@ class HRAnalytics:
             {'name': 'Jane Smith', 'score': 89, 'modules': 7},
             {'name': 'Mike Johnson', 'score': 82, 'modules': 6}
         ]
-        
-        return round(potential_score, 2)
-    
-    def suggest_growth_actions(self, employee, potential_score):
-        """Suggest growth actions based on leadership potential"""
-        actions = []
-        
-        if potential_score >= 8.5:
-            actions = [
-                "Enroll in Executive Leadership Program",
-                "Assign mentorship role for junior employees",
-                "Include in strategic planning sessions",
-                "Consider for cross-functional project leadership"
-            ]
-        elif potential_score >= 7.0:
-            actions = [
-                "Participate in Leadership Development Workshop",
-                "Shadow senior management in meetings",
-                "Lead a small team project",
-                "Attend advanced communication training"
-            ]
-        else:
-            actions = [
-                "Focus on performance improvement",
-                "Participate in team collaboration workshops",
-                "Seek mentorship from senior colleagues",
-                "Develop technical skills relevant to role"
-            ]
-        
-        return actions
-    
-    def generate_appraisal_insights(self, reviews):
-        """Generate insights from performance reviews"""
-        if not reviews:
-            return {
-                'avg_rating': 0,
-                'sentiment_distribution': {'positive': 0, 'neutral': 0, 'negative': 0},
-                'trends': [],
-                'top_performers': [],
-                'improvement_needed': []
-            }
-        
-        # Calculate average rating
-        avg_rating = sum(review.overall_rating for review in reviews) / len(reviews)
-        
-        # Sentiment distribution
-        sentiment_dist = {'positive': 0, 'neutral': 0, 'negative': 0}
-        for review in reviews:
-            if review.sentiment_score >= 7:
-                sentiment_dist['positive'] += 1
-            elif review.sentiment_score >= 4:
-                sentiment_dist['neutral'] += 1
-            else:
-                sentiment_dist['negative'] += 1
-        
-        # Top performers and improvement needed
-        sorted_reviews = sorted(reviews, key=lambda x: x.overall_rating, reverse=True)
-        top_performers = [
-            {'name': review.employee.name, 'rating': review.overall_rating}
-            for review in sorted_reviews[:5]
-        ]
-        
-        improvement_needed = [
-            {'name': review.employee.name, 'rating': review.overall_rating}
-            for review in sorted_reviews[-5:] if review.overall_rating < 6
-        ]
-        
-        return {
-            'avg_rating': round(avg_rating, 2),
-            'sentiment_distribution': sentiment_dist,
-            'total_reviews': len(reviews),
-            'top_performers': top_performers,
-            'improvement_needed': improvement_needed
-        }
     
     def calculate_quiz_score(self, user_answers, correct_answers):
         """Calculate quiz score"""
