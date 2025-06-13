@@ -172,7 +172,7 @@ def talent_sourcing():
         job_description = request.form.get('job_description', '')
 
         # Generate mock candidate profiles
-        candidates = mock_data.generate_candidate_profiles(job_title, job_description)
+        candidates = mock_data_gen.generate_candidate_profiles(job_title, job_description)
 
         return render_template('talent_sourcing.html', 
                              candidates=candidates, 
@@ -446,9 +446,16 @@ def hr_data_management():
                 flash('Employee not found', 'error')
 
         elif action == 'add_promotion':
-            employee_id = int(request.form.get('employee_id'))
+            employee_id_str = request.form.get('employee_id')
             new_position = request.form.get('new_position')
-            promotion_date = datetime.strptime(request.form.get('promotion_date'), '%Y-%m-%d').date()
+            promotion_date_str = request.form.get('promotion_date')
+            
+            if not employee_id_str or not new_position or not promotion_date_str:
+                flash('Employee ID, new position, and promotion date are required', 'error')
+                return redirect(url_for('hr_data_management'))
+                
+            employee_id = int(employee_id_str)
+            promotion_date = datetime.strptime(promotion_date_str, '%Y-%m-%d').date()
             created_by = request.form.get('created_by', 'HR Admin')
             reason = request.form.get('reason', '')
 
@@ -491,8 +498,15 @@ def hr_data_management():
                 flash('Employee not found', 'error')
 
         elif action == 'add_exit':
-            employee_id = int(request.form.get('employee_id'))
-            exit_date = datetime.strptime(request.form.get('exit_date'), '%Y-%m-%d').date()
+            employee_id_str = request.form.get('employee_id')
+            exit_date_str = request.form.get('exit_date')
+            
+            if not employee_id_str or not exit_date_str:
+                flash('Employee ID and exit date are required', 'error')
+                return redirect(url_for('hr_data_management'))
+                
+            employee_id = int(employee_id_str)
+            exit_date = datetime.strptime(exit_date_str, '%Y-%m-%d').date()
             reason = request.form.get('reason', '')
             created_by = request.form.get('created_by', 'HR Admin')
 
@@ -534,7 +548,13 @@ def hr_data_management():
             email = request.form.get('email')
             department = request.form.get('department')
             position = request.form.get('position')
-            hire_date = datetime.strptime(request.form.get('hire_date'), '%Y-%m-%d').date()
+            hire_date_str = request.form.get('hire_date')
+            
+            if not name or not email or not department or not position or not hire_date_str:
+                flash('All fields are required for new joining', 'error')
+                return redirect(url_for('hr_data_management'))
+                
+            hire_date = datetime.strptime(hire_date_str, '%Y-%m-%d').date()
             salary = float(request.form.get('salary', 0))
             created_by = request.form.get('created_by', 'HR Admin')
 
@@ -630,21 +650,31 @@ def export_employee_data(employee_id):
 @app.route('/employee-insights/<int:employee_id>')
 def employee_insights(employee_id):
     """Individual employee detailed insights"""
-    from utils.real_hr_analytics import RealHRAnalytics
-
-    analytics = RealHRAnalytics()
-    employee_data = analytics.get_employee_detailed_insights(employee_id)
-
-    if not employee_data:
-        flash('Employee not found', 'error')
-        return redirect(url_for('hr_insights'))
-
-    return render_template('employee_insights.html', **employee_data)
+    employee = Employee.query.get_or_404(employee_id)
+    
+    # Get all related data for this employee
+    performance_reviews = PerformanceReview.query.filter_by(employee_id=employee_id).order_by(PerformanceReview.created_at.desc()).all()
+    learning_progress = LearningProgress.query.filter_by(employee_id=employee_id).all()
+    wellness_checks = WellnessCheck.query.filter_by(employee_id=employee_id).order_by(WellnessCheck.check_date.desc()).all()
+    hr_transactions = HRTransaction.query.filter_by(employee_id=employee_id).order_by(HRTransaction.created_at.desc()).all()
+    
+    # Calculate additional metrics
+    leadership_score = hr_analytics.calculate_leadership_potential(employee)
+    recent_wellness = wellness_checks[0] if wellness_checks else None
+    
+    return render_template('employee_insights.html', 
+                         employee=employee,
+                         performance_reviews=performance_reviews,
+                         learning_progress=learning_progress,
+                         wellness_checks=wellness_checks,
+                         hr_transactions=hr_transactions,
+                         leadership_score=leadership_score,
+                         recent_wellness=recent_wellness)
 
 @app.route('/api/quiz/<module_name>')
 def get_quiz(module_name):
     """API endpoint to get quiz data"""
-    quiz_data = mock_data.get_quiz_data(module_name)
+    quiz_data = mock_data_gen.get_quiz_data(module_name)
     return jsonify(quiz_data)
 
 @app.route('/reset-data')

@@ -22,6 +22,9 @@ class Employee(db.Model):
     skill_gaps = db.Column(db.String(500))
     status = db.Column(db.String(20), default='active')  # active, inactive, terminated
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        super(Employee, self).__init__(**kwargs)
 
 class Resume(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -95,6 +98,9 @@ class EmployeeHistory(db.Model):
     notes = db.Column(Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     employee = db.relationship('Employee', backref=db.backref('history_records', lazy=True))
+    
+    def __init__(self, **kwargs):
+        super(EmployeeHistory, self).__init__(**kwargs)
 
 class CompanyMetrics(db.Model):
     """Store monthly/quarterly company-wide metrics"""
