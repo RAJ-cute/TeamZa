@@ -27,7 +27,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3 mb-3">
                     <div class="card h-100 bg-light">
                         <div class="card-body text-center">
@@ -40,7 +40,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3 mb-3">
                     <div class="card h-100 bg-light">
                         <div class="card-body text-center">
@@ -53,7 +53,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-3 mb-3">
                     <div class="card h-100 bg-light">
                         <div class="card-body text-center">
@@ -113,13 +113,13 @@
                                             </td>
                                             <td>
                                                 {% if transaction.transaction_type == 'increment' %}
-                                                    ${{{ "{:,.0f}"|format(transaction.amount) if transaction.amount else '0' }}} increase
+                                                    ${{ "{:,.0f}"|format(transaction.amount) if transaction.amount else '0' }} increase
                                                 {% elif transaction.transaction_type == 'promotion' %}
                                                     {{ transaction.previous_position }} → {{ transaction.new_position }}
                                                 {% elif transaction.transaction_type == 'joining' %}
                                                     New hire: {{ transaction.new_position }}
                                                 {% elif transaction.transaction_type == 'exit' %}
-                                                    {{ transaction.reason[:50] }}...
+                                                    {{ transaction.reason[:50] if transaction.reason else 'No reason provided' }}
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -157,7 +157,7 @@
             <form method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add_increment">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Employee</label>
                         <select name="employee_id" class="form-select" required>
@@ -167,7 +167,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -182,17 +182,17 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Effective Date</label>
                         <input type="date" name="increment_date" class="form-control" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Reason</label>
                         <textarea name="reason" class="form-control" rows="3" placeholder="Performance-based increment, annual review, etc."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Created By</label>
                         <input type="text" name="created_by" class="form-control" value="HR Admin" required>
@@ -218,7 +218,7 @@
             <form method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add_promotion">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Employee</label>
                         <select name="employee_id" class="form-select" required>
@@ -228,22 +228,22 @@
                             {% endfor %}
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">New Position</label>
                         <input type="text" name="new_position" class="form-control" placeholder="Senior Manager, Team Lead, etc." required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Promotion Date</label>
                         <input type="date" name="promotion_date" class="form-control" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Reason</label>
                         <textarea name="reason" class="form-control" rows="3" placeholder="Exceptional performance, leadership skills, etc."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Created By</label>
                         <input type="text" name="created_by" class="form-control" value="HR Admin" required>
@@ -269,7 +269,7 @@
             <form method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add_joining">
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -284,7 +284,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -304,7 +304,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -319,7 +319,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Created By</label>
                         <input type="text" name="created_by" class="form-control" value="HR Admin" required>
@@ -345,7 +345,7 @@
             <form method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="add_exit">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Employee</label>
                         <select name="employee_id" class="form-select" required>
@@ -357,17 +357,17 @@
                             {% endfor %}
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Exit Date</label>
                         <input type="date" name="exit_date" class="form-control" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Reason for Exit</label>
                         <textarea name="reason" class="form-control" rows="3" placeholder="Resignation, termination, retirement, etc." required></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Created By</label>
                         <input type="text" name="created_by" class="form-control" value="HR Admin" required>

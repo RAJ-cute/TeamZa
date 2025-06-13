@@ -1,4 +1,96 @@
-from flask import render_template, request, jsonify, flash, redirect, url_for
+
+
+        
+                                 
+                                      
+        
+        
+            
+             
+      
+                                                      
+                                                              
+
+        
+            
+        
+        
+                        
+
+                        
+                       
+                    
+                                  
+                        
+                       
+                    
+                   
+                   
+                   
+                   
+                                                    
+ 
+ 
+
+            
+ 
+ 
+
+                
+               
+               
+               
+               
+               
+               
+                              
+ 
+
+        
+                
+ 
+ 
+
+     
+
+                    
+     
+
+            
+            
+        
+        
+        
+       
+             
+
+        
+                          
+
+                
+                                                                                                                                                                                                                                        
+                    
+                   
+                                                                                                                                                    
+                    
+                   
+                                                                                                                                                                                                                                                                                                     
+                                         name=name,                                                                                                                                                                                                                                                                        
+        
+        
+       ]
+      
+
+        
+        
+
+        
+        
+
+
+
+            
+           from flask import render_template, request, jsonify, flash, redirect, url_for
 from app import app, db
 from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview
 from utils.nlp_processor import NLPProcessor
@@ -353,13 +445,13 @@ def wellness_tracker():
 def hr_insights():
     """Comprehensive HR Insights Dashboard with Company and Individual Analytics"""
     from utils.real_hr_analytics import RealHRAnalytics
-    
+
     # Initialize analytics processor
     analytics = RealHRAnalytics()
-    
+
     # Get comprehensive company insights
     insights_data = analytics.get_company_insights()
-    
+
     # Extract data for template
     total_employees = insights_data['total_employees']
     dept_stats = insights_data['department_distribution']
@@ -369,10 +461,10 @@ def hr_insights():
     employee_leaderboard = insights_data['employee_leaderboard']
     monthly_trends = insights_data['monthly_trends']
     wellness_summary = insights_data['wellness_summary']
-    
+
     # Get all employees for individual insights tab
     employees = Employee.query.filter_by(status='active').all()
-    
+
     # Extract real performance data
     avg_performance = performance_data['average_rating']
     top_performers = [emp for emp in employees if (emp.performance_score or 0) >= 8.5]
@@ -395,10 +487,10 @@ def hr_data_management():
     """HR Data Management - Add/Update employee data, increments, promotions"""
     from datetime import datetime
     from models import HRTransaction, EmployeeHistory
-    
+
     if request.method == 'POST':
         action = request.form.get('action')
-        
+
         if action == 'add_increment':
             employee_id = int(request.form.get('employee_id'))
             increment_amount = float(request.form.get('increment_amount', 0))
@@ -406,13 +498,13 @@ def hr_data_management():
             increment_date = datetime.strptime(request.form.get('increment_date'), '%Y-%m-%d').date()
             reason = request.form.get('reason', '')
             created_by = request.form.get('created_by', 'HR Admin')
-            
+
             employee = Employee.query.get(employee_id)
             if employee:
                 # Record HR transaction
                 previous_salary = employee.current_salary or 0
                 new_salary = previous_salary + increment_amount
-                
+
                 transaction = HRTransaction(
                     employee_id=employee_id,
                     transaction_type='increment',
@@ -426,11 +518,11 @@ def hr_data_management():
                     created_by=created_by
                 )
                 db.session.add(transaction)
-                
+
                 # Update employee record
                 employee.current_salary = new_salary
                 employee.last_hike_date = increment_date
-                
+
                 # Record history
                 history = EmployeeHistory(
                     employee_id=employee_id,
@@ -442,23 +534,23 @@ def hr_data_management():
                     notes=f'Increment: {increment_percentage}% - {reason}'
                 )
                 db.session.add(history)
-                
+
                 db.session.commit()
                 flash(f'Increment of {increment_percentage}% recorded for {employee.name}', 'success')
             else:
                 flash('Employee not found', 'error')
-                
+
         elif action == 'add_promotion':
             employee_id = int(request.form.get('employee_id'))
             new_position = request.form.get('new_position')
             promotion_date = datetime.strptime(request.form.get('promotion_date'), '%Y-%m-%d').date()
             created_by = request.form.get('created_by', 'HR Admin')
             reason = request.form.get('reason', '')
-            
+
             employee = Employee.query.get(employee_id)
             if employee:
                 previous_position = employee.position
-                
+
                 # Record HR transaction
                 transaction = HRTransaction(
                     employee_id=employee_id,
@@ -471,11 +563,11 @@ def hr_data_management():
                     created_by=created_by
                 )
                 db.session.add(transaction)
-                
+
                 # Update employee record
                 employee.position = new_position
                 employee.last_promotion_date = promotion_date
-                
+
                 # Record history
                 history = EmployeeHistory(
                     employee_id=employee_id,
@@ -487,18 +579,18 @@ def hr_data_management():
                     notes=f'Promotion - {reason}'
                 )
                 db.session.add(history)
-                
+
                 db.session.commit()
                 flash(f'Promotion to {new_position} recorded for {employee.name}', 'success')
             else:
                 flash('Employee not found', 'error')
-                
+
         elif action == 'add_exit':
             employee_id = int(request.form.get('employee_id'))
             exit_date = datetime.strptime(request.form.get('exit_date'), '%Y-%m-%d').date()
             reason = request.form.get('reason', '')
             created_by = request.form.get('created_by', 'HR Admin')
-            
+
             employee = Employee.query.get(employee_id)
             if employee:
                 # Record HR transaction
@@ -511,10 +603,10 @@ def hr_data_management():
                     created_by=created_by
                 )
                 db.session.add(transaction)
-                
+
                 # Update employee status
                 employee.status = 'terminated'
-                
+
                 # Record history
                 history = EmployeeHistory(
                     employee_id=employee_id,
@@ -526,12 +618,12 @@ def hr_data_management():
                     notes=f'Exit - {reason}'
                 )
                 db.session.add(history)
-                
+
                 db.session.commit()
                 flash(f'Exit recorded for {employee.name}', 'success')
             else:
                 flash('Employee not found', 'error')
-                
+
         elif action == 'add_joining':
             name = request.form.get('name')
             email = request.form.get('email')
@@ -540,7 +632,7 @@ def hr_data_management():
             hire_date = datetime.strptime(request.form.get('hire_date'), '%Y-%m-%d').date()
             salary = float(request.form.get('salary', 0))
             created_by = request.form.get('created_by', 'HR Admin')
-            
+
             # Create new employee
             employee = Employee(
                 name=name,
@@ -554,7 +646,7 @@ def hr_data_management():
             )
             db.session.add(employee)
             db.session.flush()  # Get the employee ID
-            
+
             # Record HR transaction
             transaction = HRTransaction(
                 employee_id=employee.id,
@@ -567,17 +659,17 @@ def hr_data_management():
                 created_by=created_by
             )
             db.session.add(transaction)
-            
+
             db.session.commit()
             flash(f'Employee {name} added successfully', 'success')
-        
+
         return redirect(url_for('hr_data_management'))
-    
+
     # Get all employees and recent transactions
     employees = Employee.query.order_by(Employee.name).all()
     recent_transactions = HRTransaction.query.order_by(HRTransaction.created_at.desc()).limit(20).all()
     departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Product']
-    
+
     return render_template('hr_data_management.html',
                          employees=employees,
                          recent_transactions=recent_transactions,
@@ -589,13 +681,13 @@ def export_company_data():
     from utils.real_hr_analytics import RealHRAnalytics
     from flask import send_file
     import io
-    
+
     analytics = RealHRAnalytics()
     excel_data = analytics.export_company_data_to_excel()
-    
+
     # Create file-like object
     output = io.BytesIO(excel_data)
-    
+
     return send_file(
         output,
         as_attachment=True,
@@ -609,20 +701,20 @@ def export_employee_data(employee_id):
     from utils.real_hr_analytics import RealHRAnalytics
     from flask import send_file
     import io
-    
+
     analytics = RealHRAnalytics()
     excel_data = analytics.export_employee_data_to_excel(employee_id)
-    
+
     if not excel_data:
         flash('Employee not found', 'error')
         return redirect(url_for('hr_insights'))
-    
+
     employee = Employee.query.get(employee_id)
     employee_name = employee.name.replace(' ', '_') if employee else 'employee'
-    
+
     # Create file-like object
     output = io.BytesIO(excel_data)
-    
+
     return send_file(
         output,
         as_attachment=True,
@@ -634,14 +726,14 @@ def export_employee_data(employee_id):
 def employee_insights(employee_id):
     """Individual employee detailed insights"""
     from utils.real_hr_analytics import RealHRAnalytics
-    
+
     analytics = RealHRAnalytics()
     employee_data = analytics.get_employee_detailed_insights(employee_id)
-    
+
     if not employee_data:
         flash('Employee not found', 'error')
         return redirect(url_for('hr_insights'))
-    
+
     return render_template('employee_insights.html', **employee_data)
 
 @app.route('/api/quiz/<module_name>')
@@ -663,9 +755,9 @@ def reset_data():
         HRTransaction.query.delete()
         EmployeeHistory.query.delete()
         db.session.commit()
-        
+
         flash('Data reset successfully! The system will reload real data automatically.', 'success')
-        
+
     except Exception as e:
         flash(f'Error resetting data: {str(e)}', 'error')
         db.session.rollback()

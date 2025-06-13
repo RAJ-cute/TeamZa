@@ -18,15 +18,15 @@ const HRCharts = {
         light: '#f8f9fa',
         dark: '#343a40'
     },
-    
+
     gradients: {},
-    
+
     // Initialize chart utilities
     init: function() {
         this.setupResponsiveDefaults();
         this.createGradients();
     },
-    
+
     // Setup responsive defaults
     setupResponsiveDefaults: function() {
         Chart.defaults.responsive = true;
@@ -37,24 +37,24 @@ const HRCharts = {
         Chart.defaults.plugins.tooltip.bodyColor = '#fff';
         Chart.defaults.plugins.tooltip.cornerRadius = 6;
     },
-    
+
     // Create gradient backgrounds
     createGradients: function() {
         // This would be called when creating charts with canvas context
     },
-    
+
     // Get color palette
     getColorPalette: function(count = 6) {
         const baseColors = Object.values(this.colors);
         const colors = [];
-        
+
         for (let i = 0; i < count; i++) {
             colors.push(baseColors[i % baseColors.length]);
         }
-        
+
         return colors;
     },
-    
+
     // Create gradient background
     createGradient: function(ctx, color1, color2) {
         const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -62,7 +62,7 @@ const HRCharts = {
         gradient.addColorStop(1, color2);
         return gradient;
     },
-    
+
     // Performance chart configuration
     performanceChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -121,7 +121,7 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Department distribution pie chart
     departmentChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -163,7 +163,7 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Wellness status bar chart
     wellnessChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -215,7 +215,7 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Attrition trends line chart
     attritionChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -272,7 +272,7 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Skills radar chart
     skillsRadarChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -318,7 +318,7 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Learning progress chart
     learningProgressChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -367,7 +367,7 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Sentiment analysis chart
     sentimentChart: function(ctx, data) {
         return new Chart(ctx, {
@@ -405,30 +405,30 @@ const HRCharts = {
             }
         });
     },
-    
+
     // Create animated counter
     animateCounter: function(element, start, end, duration = 2000) {
         const range = end - start;
         const increment = end > start ? 1 : -1;
         const stepTime = Math.abs(Math.floor(duration / range));
         let current = start;
-        
+
         const timer = setInterval(() => {
             current += increment;
             element.textContent = current;
-            
+
             if (current === end) {
                 clearInterval(timer);
             }
         }, stepTime);
     },
-    
+
     // Update chart data
     updateChart: function(chart, newData) {
         chart.data = newData;
         chart.update('active');
     },
-    
+
     // Destroy chart safely
     destroyChart: function(chart) {
         if (chart && typeof chart.destroy === 'function') {
@@ -440,7 +440,7 @@ const HRCharts = {
 // Initialize charts when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     HRCharts.init();
-    
+
     // Initialize any charts present on the page
     initializePageCharts();
 });
@@ -450,22 +450,22 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializePageCharts() {
     const currentPath = window.location.pathname;
-    
+
     // Performance dashboard charts
     if (currentPath === '/appraisal-dashboard') {
         initializeAppraisalCharts();
     }
-    
+
     // HR insights charts
     if (currentPath === '/hr-insights') {
         initializeInsightsCharts();
     }
-    
+
     // Learning module charts
     if (currentPath === '/learning-module') {
         initializeLearningCharts();
     }
-    
+
     // Leadership potential charts
     if (currentPath === '/leadership-potential') {
         initializeLeadershipCharts();
@@ -481,7 +481,7 @@ function initializeAppraisalCharts() {
     if (sentimentCtx && window.sentimentData) {
         HRCharts.sentimentChart(sentimentCtx.getContext('2d'), window.sentimentData);
     }
-    
+
     // Performance ratings chart
     const ratingsCtx = document.getElementById('ratingsChart');
     if (ratingsCtx && window.ratingsData) {
@@ -493,28 +493,44 @@ function initializeAppraisalCharts() {
  * Initialize HR insights charts
  */
 function initializeInsightsCharts() {
+    console.log('Initializing insights charts...');
+    console.log('Available data:', {
+        dept: window.departmentData,
+        perf: window.performanceData,
+        trends: window.monthlyTrends,
+        wellness: window.wellnessData
+    });
+
     // Department distribution
     const deptCtx = document.getElementById('departmentChart');
     if (deptCtx && window.departmentData) {
-        createDepartmentChart(deptCtx.getContext('2d'), window.departmentData);
+        HRCharts.departmentChart(deptCtx.getContext('2d'), window.departmentData);
+    } else {
+        console.log('Department chart element or data missing');
     }
-    
+
     // Performance distribution
     const perfCtx = document.getElementById('performanceChart');
     if (perfCtx && window.performanceData) {
-        createPerformanceChart(perfCtx.getContext('2d'), window.performanceData);
+        createPerformanceDistributionChart(perfCtx.getContext('2d'), window.performanceData);
+    } else {
+        console.log('Performance chart element or data missing');
     }
-    
+
     // Monthly trends
     const trendsCtx = document.getElementById('trendsChart');
     if (trendsCtx && window.monthlyTrends) {
-        createTrendsChart(trendsCtx.getContext('2d'), window.monthlyTrends);
+        createMonthlyTrendsChart(trendsCtx.getContext('2d'), window.monthlyTrends);
+    } else {
+        console.log('Trends chart element or data missing');
     }
-    
+
     // Wellness distribution
     const wellnessCtx = document.getElementById('wellnessChart');
     if (wellnessCtx && window.wellnessData) {
-        createWellnessChart(wellnessCtx.getContext('2d'), window.wellnessData);
+        HRCharts.wellnessChart(wellnessCtx.getContext('2d'), window.wellnessData);
+    } else {
+        console.log('Wellness chart element or data missing');
     }
 }
 
@@ -524,7 +540,7 @@ function initializeInsightsCharts() {
 function createDepartmentChart(ctx, data) {
     const labels = Object.keys(data);
     const values = Object.values(data);
-    
+
     new Chart(ctx, {
         type: 'pie',
         data: {
@@ -556,13 +572,13 @@ function createDepartmentChart(ctx, data) {
 /**
  * Create performance distribution chart
  */
-function createPerformanceChart(ctx, data) {
+function createPerformanceDistributionChart(ctx, data) {
     const distribution = data.distribution || {};
-    
+
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Excellent', 'Good', 'Average', 'Needs Improvement'],
+            labels: ['Excellent (8-10)', 'Good (6-8)', 'Average (4-6)', 'Needs Improvement (0-4)'],
             datasets: [{
                 label: 'Number of Employees',
                 data: [
@@ -571,16 +587,43 @@ function createPerformanceChart(ctx, data) {
                     distribution.average || 0,
                     distribution.needs_improvement || 0
                 ],
-                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545']
+                backgroundColor: [
+                    HRCharts.colors.success,
+                    HRCharts.colors.info,
+                    HRCharts.colors.warning,
+                    HRCharts.colors.danger
+                ],
+                borderWidth: 1,
+                borderColor: '#fff'
             }]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.y} employees`;
+                        }
+                    }
+                }
+            },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             }
@@ -591,13 +634,36 @@ function createPerformanceChart(ctx, data) {
 /**
  * Create monthly trends chart
  */
-function createTrendsChart(ctx, data) {
+function createMonthlyTrendsChart(ctx, data) {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    const incrementData = months.map((_, index) => data.increments ? (data.increments[index + 1] || 0) : 0);
-    const joiningData = months.map((_, index) => data.joinings ? (data.joinings[index + 1] || 0) : 0);
-    const exitData = months.map((_, index) => data.exits ? (data.exits[index + 1] || 0) : 0);
-    
+
+    // Handle different data structures
+    let incrementData, joiningData, exitData;
+
+    if (data.increments && Array.isArray(data.increments)) {
+        incrementData = data.increments;
+    } else if (data.increments && typeof data.increments === 'object') {
+        incrementData = months.map((_, index) => data.increments[index + 1] || 0);
+    } else {
+        incrementData = new Array(12).fill(0);
+    }
+
+    if (data.joinings && Array.isArray(data.joinings)) {
+        joiningData = data.joinings;
+    } else if (data.joinings && typeof data.joinings === 'object') {
+        joiningData = months.map((_, index) => data.joinings[index + 1] || 0);
+    } else {
+        joiningData = new Array(12).fill(0);
+    }
+
+    if (data.exits && Array.isArray(data.exits)) {
+        exitData = data.exits;
+    } else if (data.exits && typeof data.exits === 'object') {
+        exitData = months.map((_, index) => data.exits[index + 1] || 0);
+    } else {
+        exitData = new Array(12).fill(0);
+    }
+
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -606,40 +672,76 @@ function createTrendsChart(ctx, data) {
                 {
                     label: 'Increments',
                     data: incrementData,
-                    borderColor: '#28a745',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    tension: 0.4
+                    borderColor: HRCharts.colors.success,
+                    backgroundColor: HRCharts.colors.success + '20',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: HRCharts.colors.success,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
                 },
                 {
-                    label: 'Joinings',
+                    label: 'New Joinings',
                     data: joiningData,
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    tension: 0.4
+                    borderColor: HRCharts.colors.primary,
+                    backgroundColor: HRCharts.colors.primary + '20',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: HRCharts.colors.primary,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
                 },
                 {
                     label: 'Exits',
                     data: exitData,
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                    tension: 0.4
+                    borderColor: HRCharts.colors.danger,
+                    backgroundColor: HRCharts.colors.danger + '20',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: HRCharts.colors.danger,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
                 }
             ]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             },
-            plugins: {
-                legend: {
-                    position: 'top'
-                }
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
             }
         }
     });
@@ -649,28 +751,59 @@ function createTrendsChart(ctx, data) {
  * Create wellness distribution chart
  */
 function createWellnessChart(ctx, data) {
-    const distribution = data.distribution || {};
-    
+    // Handle both old and new data structures
+    let greenCount, yellowCount, redCount;
+
+    if (data.distribution) {
+        greenCount = data.distribution.green || 0;
+        yellowCount = data.distribution.yellow || 0;
+        redCount = data.distribution.red || 0;
+    } else {
+        greenCount = data.green || 0;
+        yellowCount = data.yellow || 0;
+        redCount = data.red || 0;
+    }
+
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Good', 'Moderate', 'Concerning'],
+            labels: ['Excellent', 'Good', 'Needs Attention'],
             datasets: [{
-                data: [
-                    distribution.green || 0,
-                    distribution.yellow || 0,
-                    distribution.red || 0
+                data: [greenCount, yellowCount, redCount],
+                backgroundColor: [
+                    HRCharts.colors.success,
+                    HRCharts.colors.warning,
+                    HRCharts.colors.danger
                 ],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
             plugins: {
                 legend: {
-                    display: false
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? Math.round((context.parsed / total) * 100) : 0;
+                            return `${context.label}: ${context.parsed} employees (${percentage}%)`;
+                        }
+                    }
                 }
-            }
+            },
+            cutout: '50%'
         }
     });
 }
