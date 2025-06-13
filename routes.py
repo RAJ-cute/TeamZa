@@ -27,10 +27,10 @@ def index():
     """Professional landing page with company info and features"""
     return render_template('landing.html')
 
-@app.route('/hr-command-center-main')
-def hr_command_center():
-    """3D Neural Network HR Command Center Main Interface"""
-    return render_template('hr_command_center_main.html')
+@app.route('/login')
+def login():
+    """Login page for accessing the HR platform"""
+    return render_template('login.html')
 
 @app.route('/dashboard')
 def dashboard():

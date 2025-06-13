@@ -1,6 +1,1054 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentCore AI - 3D HR Intelligence Platform</title>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block title %}HR Dashboard - HR Management Portal{% endblock %}
+        body {
+            font-family: 'Orbitron', monospace;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            color: #00ffff;
+            cursor: none;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Custom Cursor */
+        .cyber-cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,255,0.3) 0%, transparent 70%);
+            z-index: 10000;
+            pointer-events: none;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 0 20px rgba(0,255,255,0.5),
+                inset 0 0 10px rgba(0,255,255,0.3);
+        }
+
+        .cyber-cursor.hover {
+            transform: scale(2);
+            background: radial-gradient(circle, rgba(255,0,255,0.3) 0%, transparent 70%);
+            border-color: #ff00ff;
+            box-shadow: 
+                0 0 30px rgba(255,0,255,0.8),
+                inset 0 0 15px rgba(255,0,255,0.5);
+        }
+
+        /* Neural HUD Interface */
+        .neural-hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        /* Top Neural Bar */
+        .neural-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, 
+                rgba(0,255,255,0.1) 0%, 
+                rgba(0,128,255,0.05) 50%, 
+                transparent 100%);
+            border-bottom: 2px solid rgba(0,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+        }
+
+        .neural-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 30px rgba(0,255,255,1);
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        .system-vitals {
+            display: flex;
+            gap: 40px;
+        }
+
+        .vital-meter {
+            text-align: center;
+        }
+
+        .vital-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0,255,136,0.8);
+            animation: dataFlicker 2s infinite;
+        }
+
+        .vital-label {
+            font-size: 0.7rem;
+            color: rgba(0,255,255,0.8);
+            letter-spacing: 2px;
+        }
+
+        .neural-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-orb {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            position: relative;
+            animation: orbPulse 2s ease-in-out infinite;
+        }
+
+        .status-orb::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: coreRotate 3s linear infinite;
+            box-shadow: 0 0 30px rgba(0,255,255,0.8);
+        }
+
+        /* 3D Module Spheres */
+        .module-sphere {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border: 3px solid rgba(0,255,255,0.5);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(0,255,255,0.2) 0%, 
+                rgba(0,128,255,0.1) 50%, 
+                transparent 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            pointer-events: auto;
+            animation: float 6s ease-in-out infinite;
+            text-decoration: none;
+            color: #00ffff;
+        }
+
+        .module-sphere:hover {
+            transform: scale(1.3) rotateX(15deg) rotateY(15deg);
+            border-color: #ff00ff;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255,0,255,0.3) 0%, 
+                rgba(255,0,128,0.2) 50%, 
+                transparent 100%);
+            box-shadow: 
+                0 0 50px rgba(255,0,255,0.6),
+                inset 0 0 30px rgba(255,0,255,0.2);
+            color: #ff00ff;
+            text-decoration: none;
+        }
+
+        .sphere-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            animation: iconSpin 4s linear infinite;
+        }
+
+        .sphere-label {
+            font-size: 0.7rem;
+            text-align: center;
+            line-height: 1.2;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* Position spheres in 3D space */
+        .sphere-1 { top: 20%; left: 15%; animation-delay: 0s; }
+        .sphere-2 { top: 15%; right: 20%; animation-delay: 1s; }
+        .sphere-3 { top: 35%; left: 5%; animation-delay: 2s; }
+        .sphere-4 { top: 45%; right: 10%; animation-delay: 3s; }
+        .sphere-5 { bottom: 35%; left: 10%; animation-delay: 4s; }
+        .sphere-6 { bottom: 25%; right: 15%; animation-delay: 5s; }
+        .sphere-7 { bottom: 45%; left: 25%; animation-delay: 6s; }
+        .sphere-8 { bottom: 20%; right: 25%; animation-delay: 7s; }
+
+        /* Central Neural Core */
+        .neural-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border: 5px solid #00ffff;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, 
+                rgba(0,255,255,0.1) 0%, 
+                rgba(0,128,255,0.05) 30%, 
+                transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: coreRotate 20s linear infinite;
+            box-shadow: 
+                0 0 100px rgba(0,255,255,0.5),
+                inset 0 0 50px rgba(0,255,255,0.2);
+        }
+
+        .neural-core::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 3px solid rgba(0,255,255,0.6);
+            border-radius: 50%;
+            animation: coreRotate 15s linear infinite reverse;
+        }
+
+        .neural-core::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(0,255,255,0.8);
+            border-radius: 50%;
+            animation: coreRotate 10s linear infinite;
+        }
+
+        .core-brain {
+            font-size: 4rem;
+            color: #00ffff;
+            animation: brainPulse 3s ease-in-out infinite;
+            z-index: 1;
+            text-shadow: 0 0 50px rgba(0,255,255,1);
+        }
+
+        /* Neural Connections */
+        .neural-connection {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(0,255,255,0.8) 20%, 
+                rgba(255,0,255,0.8) 50%, 
+                rgba(0,255,255,0.8) 80%, 
+                transparent 100%);
+            animation: dataStream 3s ease-in-out infinite;
+            pointer-events: none;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0,255,255,0.5);
+        }
+
+        /* Side Neural Panels */
+        .neural-panel {
+            position: absolute;
+            width: 350px;
+            height: calc(100vh - 200px);
+            top: 100px;
+            background: linear-gradient(135deg, 
+                rgba(0,255,255,0.05) 0%, 
+                rgba(0,128,255,0.03) 50%, 
+                rgba(255,0,255,0.02) 100%);
+            border: 2px solid rgba(0,255,255,0.3);
+            backdrop-filter: blur(25px);
+            pointer-events: auto;
+            overflow-y: auto;
+            border-radius: 15px;
+        }
+
+        .panel-left { 
+            left: 20px; 
+            border-left: 5px solid #00ffff;
+            box-shadow: 10px 0 50px rgba(0,255,255,0.3);
+        }
+        
+        .panel-right { 
+            right: 20px; 
+            border-right: 5px solid #ff00ff;
+            box-shadow: -10px 0 50px rgba(255,0,255,0.3);
+        }
+
+        .panel-header {
+            padding: 25px;
+            border-bottom: 2px solid rgba(0,255,255,0.3);
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-align: center;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .neural-metric {
+            background: rgba(0,255,255,0.08);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,255,0.1), transparent);
+            animation: scanLine 3s infinite;
+        }
+
+        .neural-metric:hover {
+            background: rgba(0,255,255,0.15);
+            border-color: #00ffff;
+            transform: translateZ(10px);
+            box-shadow: 0 10px 30px rgba(0,255,255,0.3);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: rgba(0,255,255,0.9);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0,255,136,0.8);
+            animation: valueGlow 2s ease-in-out infinite;
+        }
+
+        /* Bottom Command Console */
+        .command-console {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 25px;
+            pointer-events: auto;
+        }
+
+        .command-orb {
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(0,255,255,0.5);
+            border-radius: 50%;
+            background: radial-gradient(circle at center, 
+                rgba(0,255,255,0.2) 0%, 
+                transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #00ffff;
+            backdrop-filter: blur(15px);
+            animation: orbFloat 4s ease-in-out infinite;
+        }
+
+        .command-orb:hover {
+            transform: scale(1.2) rotateY(180deg);
+            border-color: #ff00ff;
+            background: radial-gradient(circle at center, 
+                rgba(255,0,255,0.3) 0%, 
+                transparent 70%);
+            box-shadow: 0 0 40px rgba(255,0,255,0.6);
+            color: #ff00ff;
+            text-decoration: none;
+        }
+
+        .orb-icon {
+            font-size: 1.8rem;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        /* Logout Neural Interface */
+        .logout-neural {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(255,0,0,0.5);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            text-decoration: none;
+            color: #ff4757;
+            animation: dangerPulse 3s ease-in-out infinite;
+        }
+
+        .logout-neural:hover {
+            transform: scale(1.3);
+            background: radial-gradient(circle, rgba(255,0,0,0.3) 0%, transparent 70%);
+            box-shadow: 0 0 30px rgba(255,0,0,0.8);
+            color: #ff4757;
+            text-decoration: none;
+        }
+
+        /* Animations */
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 30px rgba(0,255,255,1); }
+            50% { text-shadow: 0 0 50px rgba(0,255,255,1), 0 0 80px rgba(255,0,255,0.5); }
+        }
+
+        @keyframes dataFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes orbPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(0,255,255,0.8); }
+        }
+
+        @keyframes coreRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotateZ(0deg); }
+            33% { transform: translateY(-20px) rotateZ(5deg); }
+            66% { transform: translateY(10px) rotateZ(-3deg); }
+        }
+
+        @keyframes iconSpin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        @keyframes brainPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes dataStream {
+            0% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(0); }
+        }
+
+        @keyframes scanLine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes valueGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0,255,136,0.8); }
+            50% { text-shadow: 0 0 30px rgba(0,255,136,1), 0 0 40px rgba(0,255,255,0.5); }
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px) rotateX(0deg); }
+            50% { transform: translateY(-5px) rotateX(180deg); }
+        }
+
+        @keyframes dangerPulse {
+            0%, 100% { border-color: rgba(255,0,0,0.5); }
+            50% { border-color: rgba(255,0,0,1); }
+        }
+
+        /* Scrollbar styling */
+        .neural-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .neural-panel::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .neural-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00ffff, #ff00ff);
+            border-radius: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .neural-panel { width: 280px; }
+            .module-sphere { width: 100px; height: 100px; }
+            .sphere-icon { font-size: 2rem; }
+            .neural-core { width: 250px; height: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Custom Cyber Cursor -->
+    <div class="cyber-cursor"></div>
+
+    <!-- Neural HUD Interface -->
+    <div class="neural-hud">
+        <!-- Top Neural Bar -->
+        <div class="neural-bar">
+            <div class="neural-logo">TALENTCORE AI</div>
+            
+            <div class="system-vitals">
+                <div class="vital-meter">
+                    <div class="vital-value">{{ total_employees }}</div>
+                    <div class="vital-label">NEURAL ENTITIES</div>
+                </div>
+                <div class="vital-meter">
+                    <div class="vital-value">{{ total_resumes }}</div>
+                    <div class="vital-label">DATA PROCESSED</div>
+                </div>
+                <div class="vital-meter">
+                    <div class="vital-value">{{ active_learning }}</div>
+                    <div class="vital-label">LEARNING ACTIVE</div>
+                </div>
+                <div class="vital-meter">
+                    <div class="vital-value">97.3%</div>
+                    <div class="vital-label">AI EFFICIENCY</div>
+                </div>
+            </div>
+
+            <div class="neural-status">
+                <div class="status-orb"></div>
+                <div>
+                    <div style="font-weight: 900; font-size: 1.1rem;">NEURAL ONLINE</div>
+                    <div style="font-size: 0.8rem; opacity: 0.8;">QUANTUM SECURED</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Central Neural Core -->
+        <div class="neural-core">
+            <i class="fas fa-brain core-brain"></i>
+        </div>
+
+        <!-- 3D Module Spheres -->
+        <a href="{{ url_for('resume_screening') }}" class="module-sphere sphere-1">
+            <i class="fas fa-file-alt sphere-icon"></i>
+            <div class="sphere-label">RESUME<br>NEURAL SCAN</div>
+        </a>
+
+        <a href="{{ url_for('talent_sourcing') }}" class="module-sphere sphere-2">
+            <i class="fas fa-search sphere-icon"></i>
+            <div class="sphere-label">TALENT<br>HUNTER AI</div>
+        </a>
+
+        <a href="{{ url_for('employee_management') }}" class="module-sphere sphere-3">
+            <i class="fas fa-users sphere-icon"></i>
+            <div class="sphere-label">EMPLOYEE<br>MATRIX</div>
+        </a>
+
+        <a href="{{ url_for('leadership_potential') }}" class="module-sphere sphere-4">
+            <i class="fas fa-crown sphere-icon"></i>
+            <div class="sphere-label">LEADERSHIP<br>PREDICTOR</div>
+        </a>
+
+        <a href="{{ url_for('appraisal_dashboard') }}" class="module-sphere sphere-5">
+            <i class="fas fa-clipboard-check sphere-icon"></i>
+            <div class="sphere-label">PERFORMANCE<br>NEURAL NET</div>
+        </a>
+
+        <a href="{{ url_for('learning_module') }}" class="module-sphere sphere-6">
+            <i class="fas fa-graduation-cap sphere-icon"></i>
+            <div class="sphere-label">LEARNING<br>QUANTUM AI</div>
+        </a>
+
+        <a href="{{ url_for('skill_gap_analysis') }}" class="module-sphere sphere-7">
+            <i class="fas fa-puzzle-piece sphere-icon"></i>
+            <div class="sphere-label">SKILL GAP<br>ANALYZER</div>
+        </a>
+
+        <a href="{{ url_for('wellness_tracker') }}" class="module-sphere sphere-8">
+            <i class="fas fa-heart sphere-icon"></i>
+            <div class="sphere-label">WELLNESS<br>MONITOR</div>
+        </a>
+
+        <!-- Left Neural Panel -->
+        <div class="neural-panel panel-left">
+            <div class="panel-header">NEURAL METRICS</div>
+            <div class="neural-metric">
+                <div class="metric-title">AI PREDICTION ACCURACY</div>
+                <div class="metric-value">97.3%</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">NEURAL PROCESSING SPEED</div>
+                <div class="metric-value">847ms</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">QUANTUM CONNECTIONS</div>
+                <div class="metric-value">12.8K</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">SYSTEM LOAD</div>
+                <div class="metric-value">73%</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">SECURITY STATUS</div>
+                <div class="metric-value">MAX</div>
+            </div>
+        </div>
+
+        <!-- Right Neural Panel -->
+        <div class="neural-panel panel-right">
+            <div class="panel-header">TALENT ANALYTICS</div>
+            <div class="neural-metric">
+                <div class="metric-title">TOP PERFORMERS</div>
+                <div class="metric-value">{{ top_performers|length }}</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">DEPARTMENTS ACTIVE</div>
+                <div class="metric-value">{{ dept_stats|length }}</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">RECENT REVIEWS</div>
+                <div class="metric-value">{{ recent_reviews|length }}</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">WELLNESS CHECKS</div>
+                <div class="metric-value">{{ recent_wellness|length }}</div>
+            </div>
+            <div class="neural-metric">
+                <div class="metric-title">NEURAL INSIGHTS</div>
+                <div class="metric-value">LIVE</div>
+            </div>
+        </div>
+
+        <!-- Bottom Command Console -->
+        <div class="command-console">
+            <a href="{{ url_for('hr_insights') }}" class="command-orb">
+                <i class="fas fa-chart-line orb-icon"></i>
+            </a>
+            <a href="{{ url_for('gamification') }}" class="command-orb">
+                <i class="fas fa-trophy orb-icon"></i>
+            </a>
+            <a href="{{ url_for('hr_data_management') }}" class="command-orb">
+                <i class="fas fa-database orb-icon"></i>
+            </a>
+            <a href="{{ url_for('reset_data') }}" class="command-orb">
+                <i class="fas fa-sync orb-icon"></i>
+            </a>
+        </div>
+
+        <!-- Logout Neural Interface -->
+        <a href="/" class="logout-neural">
+            <i class="fas fa-power-off"></i>
+        </a>
+    </div>
+
+    <!-- Neural Connections -->
+    <div class="neural-connection" style="top: 25%; left: 25%; width: 300px; transform: rotate(45deg); animation-delay: 0s;"></div>
+    <div class="neural-connection" style="top: 35%; right: 20%; width: 250px; transform: rotate(-30deg); animation-delay: 1s;"></div>
+    <div class="neural-connection" style="bottom: 30%; left: 15%; width: 400px; transform: rotate(60deg); animation-delay: 2s;"></div>
+    <div class="neural-connection" style="bottom: 40%; right: 25%; width: 200px; transform: rotate(-45deg); animation-delay: 3s;"></div>
+
+    <script>
+        let scene, camera, renderer, controls, neuralNetwork, particles, quantumField;
+        let mouseX = 0, mouseY = 0;
+
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 3000);
+            camera.position.set(0, 0, 800);
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controls for interactive 3D navigation
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 1500;
+            controls.minDistance = 300;
+
+            createNeuralNetwork();
+            createQuantumParticles();
+            createDataStreams();
+            createHolographicGrid();
+            createAmbientLighting();
+            
+            animate();
+        }
+
+        function createNeuralNetwork() {
+            const networkGroup = new THREE.Group();
+            
+            // Create neural nodes
+            const nodeGeometry = new THREE.SphereGeometry(8, 32, 32);
+            const nodeMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.8,
+                emissive: 0x004444
+            });
+
+            const nodes = [];
+            const nodeCount = 150;
+
+            for (let i = 0; i < nodeCount; i++) {
+                const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+                
+                // Position nodes in a complex 3D neural structure
+                const phi = Math.acos(-1 + (2 * i) / nodeCount);
+                const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+                
+                const radius = 400 + Math.random() * 300;
+                node.position.x = radius * Math.cos(theta) * Math.sin(phi);
+                node.position.y = radius * Math.sin(theta) * Math.sin(phi);
+                node.position.z = radius * Math.cos(phi);
+                
+                node.userData = {
+                    originalPosition: node.position.clone(),
+                    pulsePhase: Math.random() * Math.PI * 2,
+                    pulseSpeed: 0.02 + Math.random() * 0.03
+                };
+                
+                networkGroup.add(node);
+                nodes.push(node);
+            }
+
+            // Create synaptic connections
+            const connectionGeometry = new THREE.BufferGeometry();
+            const connectionVertices = [];
+            const connectionColors = [];
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node1 = nodes[i];
+                
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const node2 = nodes[j];
+                    const distance = node1.position.distanceTo(node2.position);
+                    
+                    if (distance < 200 && Math.random() > 0.8) {
+                        connectionVertices.push(
+                            node1.position.x, node1.position.y, node1.position.z,
+                            node2.position.x, node2.position.y, node2.position.z
+                        );
+                        
+                        const intensity = Math.random();
+                        connectionColors.push(
+                            0, intensity, 1,
+                            intensity, 0, 1
+                        );
+                    }
+                }
+            }
+
+            connectionGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionVertices, 3));
+            connectionGeometry.setAttribute('color', new THREE.Float32BufferAttribute(connectionColors, 3));
+
+            const connectionMaterial = new THREE.LineBasicMaterial({
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.4
+            });
+
+            const connections = new THREE.LineSegments(connectionGeometry, connectionMaterial);
+            networkGroup.add(connections);
+
+            scene.add(networkGroup);
+            scene.userData.neuralNetwork = { group: networkGroup, nodes: nodes };
+        }
+
+        function createQuantumParticles() {
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleVertices = [];
+            const particleColors = [];
+            const particleSizes = [];
+
+            for (let i = 0; i < 5000; i++) {
+                particleVertices.push(
+                    (Math.random() - 0.5) * 4000,
+                    (Math.random() - 0.5) * 4000,
+                    (Math.random() - 0.5) * 2000
+                );
+
+                const hue = Math.random();
+                if (hue < 0.3) {
+                    particleColors.push(0, 1, 1); // Cyan
+                } else if (hue < 0.6) {
+                    particleColors.push(1, 0, 1); // Magenta
+                } else {
+                    particleColors.push(0, 1, 0.5); // Green-cyan
+                }
+
+                particleSizes.push(Math.random() * 3 + 1);
+            }
+
+            particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particleVertices, 3));
+            particleGeometry.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3));
+            particleGeometry.setAttribute('size', new THREE.Float32BufferAttribute(particleSizes, 1));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 3,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7,
+                sizeAttenuation: true
+            });
+
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+        }
+
+        function createDataStreams() {
+            const streamGroup = new THREE.Group();
+            
+            for (let i = 0; i < 20; i++) {
+                const curve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 1500,
+                        (Math.random() - 0.5) * 1000,
+                        (Math.random() - 0.5) * 800
+                    ),
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 1500,
+                        (Math.random() - 0.5) * 1000,
+                        (Math.random() - 0.5) * 800
+                    ),
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 1500,
+                        (Math.random() - 0.5) * 1000,
+                        (Math.random() - 0.5) * 800
+                    )
+                ]);
+
+                const streamGeometry = new THREE.TubeGeometry(curve, 20, 2, 8, false);
+                const streamMaterial = new THREE.MeshPhongMaterial({
+                    color: Math.random() > 0.5 ? 0x00ffff : 0xff00ff,
+                    transparent: true,
+                    opacity: 0.3,
+                    emissive: Math.random() > 0.5 ? 0x004444 : 0x440044
+                });
+
+                const stream = new THREE.Mesh(streamGeometry, streamMaterial);
+                streamGroup.add(stream);
+            }
+
+            scene.add(streamGroup);
+            scene.userData.dataStreams = streamGroup;
+        }
+
+        function createHolographicGrid() {
+            const gridGeometry = new THREE.PlaneGeometry(2000, 2000, 50, 50);
+            const gridMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.1,
+                wireframe: true,
+                side: THREE.DoubleSide
+            });
+
+            const grid1 = new THREE.Mesh(gridGeometry, gridMaterial);
+            grid1.rotation.x = Math.PI / 2;
+            grid1.position.y = -500;
+            scene.add(grid1);
+
+            const grid2 = new THREE.Mesh(gridGeometry, gridMaterial.clone());
+            grid2.material.color.setHex(0xff00ff);
+            grid2.rotation.x = Math.PI / 2;
+            grid2.position.y = 500;
+            scene.add(grid2);
+
+            scene.userData.grids = [grid1, grid2];
+        }
+
+        function createAmbientLighting() {
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0x00ffff, 1.5, 1000);
+            pointLight1.position.set(200, 200, 200);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xff00ff, 1.5, 1000);
+            pointLight2.position.set(-200, -200, 200);
+            scene.add(pointLight2);
+
+            const pointLight3 = new THREE.PointLight(0x00ff88, 1, 800);
+            pointLight3.position.set(0, 400, -200);
+            scene.add(pointLight3);
+
+            scene.userData.lights = [pointLight1, pointLight2, pointLight3];
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Animate neural network
+            if (scene.userData.neuralNetwork) {
+                scene.userData.neuralNetwork.group.rotation.y += 0.002;
+                scene.userData.neuralNetwork.nodes.forEach(node => {
+                    node.userData.pulsePhase += node.userData.pulseSpeed;
+                    const pulse = Math.sin(node.userData.pulsePhase);
+                    node.scale.setScalar(1 + pulse * 0.3);
+                    node.material.opacity = 0.6 + pulse * 0.3;
+                });
+            }
+
+            // Animate quantum particles
+            if (particles) {
+                particles.rotation.y += 0.001;
+                particles.rotation.x += 0.0005;
+            }
+
+            // Animate data streams
+            if (scene.userData.dataStreams) {
+                scene.userData.dataStreams.rotation.z += 0.003;
+                scene.userData.dataStreams.children.forEach((stream, index) => {
+                    stream.rotation.y += 0.01 + index * 0.002;
+                });
+            }
+
+            // Animate grids
+            if (scene.userData.grids) {
+                scene.userData.grids[0].rotation.z += 0.002;
+                scene.userData.grids[1].rotation.z -= 0.001;
+            }
+
+            // Animate lights
+            if (scene.userData.lights) {
+                scene.userData.lights[0].position.x = Math.cos(time) * 400;
+                scene.userData.lights[0].position.z = Math.sin(time) * 400;
+                scene.userData.lights[1].position.x = Math.cos(time + Math.PI) * 400;
+                scene.userData.lights[1].position.z = Math.sin(time + Math.PI) * 400;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Custom cursor tracking
+        const cursor = document.querySelector('.cyber-cursor');
+        const interactiveElements = document.querySelectorAll('.module-sphere, .command-orb, .logout-neural, .neural-metric');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 15 + 'px';
+            cursor.style.top = e.clientY - 15 + 'px';
+        });
+
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover');
+            });
+            element.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover');
+            });
+        });
+
+        // Window resize handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize scene
+        window.addEventListener('load', init);
+
+        // Add click effects
+        document.querySelectorAll('.module-sphere').forEach(sphere => {
+            sphere.addEventListener('click', (e) => {
+                // Create neural pulse effect
+                const pulse = document.createElement('div');
+                pulse.style.position = 'absolute';
+                pulse.style.width = '200px';
+                pulse.style.height = '200px';
+                pulse.style.border = '3px solid #00ffff';
+                pulse.style.borderRadius = '50%';
+                pulse.style.left = '50%';
+                pulse.style.top = '50%';
+                pulse.style.transform = 'translate(-50%, -50%)';
+                pulse.style.animation = 'neuralPulse 0.8s ease-out';
+                pulse.style.pointerEvents = 'none';
+                
+                sphere.appendChild(pulse);
+                
+                setTimeout(() => {
+                    sphere.removeChild(pulse);
+                }, 800);
+            });
+        });
+
+        // Add neural pulse animation
+        const neuralStyle = document.createElement('style');
+        neuralStyle.textContent = `
+            @keyframes neuralPulse {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(neuralStyle);
+    </script>
+</body>
+</html>
 
 {% block content %}
 <!-- Modern Page Header -->
