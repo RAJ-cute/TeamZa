@@ -1,4 +1,5 @@
 import os
+import os.path
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -13,8 +14,12 @@ db = SQLAlchemy(model_class=Base)
 # create the app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET") or "a secret key"
+# ensure instance directory exists
+instance_path = os.path.join(os.path.dirname(__file__), 'instance')
+os.makedirs(instance_path, exist_ok=True)
+
 # configure the database, relative to the app instance folder
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL") or "sqlite:///instance/hr_platform.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL") or f"sqlite:///{os.path.join(instance_path, 'hr_platform.db')}"
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
