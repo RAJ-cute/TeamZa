@@ -607,6 +607,12 @@
             // Create floating platforms for modules
             createModulePlatforms();
 
+            // Add ambient lighting effects
+            createAmbientLighting();
+
+            // Create flowing data streams
+            createDataStreams();
+
             // Animation loop
             animate();
         }
@@ -684,13 +690,19 @@
                 [-150, 100, -200], [150, -100, -200]
             ];
 
+            const moduleColors = [
+                0x00ff88, 0xff6b35, 0x667aff, 0xffd700,
+                0xff4757, 0x7bed9f, 0xff9ff3, 0x70a1ff
+            ];
+
             positions.forEach((pos, index) => {
+                // Main platform
                 const geometry = new THREE.OctahedronGeometry(30, 0);
                 const material = new THREE.MeshBasicMaterial({
-                    color: 0x00ffff,
+                    color: moduleColors[index % moduleColors.length],
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.3
+                    opacity: 0.4
                 });
 
                 const platform = new THREE.Mesh(geometry, material);
@@ -700,15 +712,102 @@
                 
                 scene.add(platform);
 
-                // Animate rotation
+                // Add pulsing core
+                const coreGeometry = new THREE.SphereGeometry(8, 16, 16);
+                const coreMaterial = new THREE.MeshBasicMaterial({
+                    color: moduleColors[index % moduleColors.length],
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                const core = new THREE.Mesh(coreGeometry, coreMaterial);
+                core.position.copy(platform.position);
+                scene.add(core);
+
+                // Animate rotation and pulsing
                 platform.userData = {
                     rotationSpeed: {
                         x: (Math.random() - 0.5) * 0.02,
                         y: (Math.random() - 0.5) * 0.02,
                         z: (Math.random() - 0.5) * 0.02
-                    }
+                    },
+                    core: core,
+                    originalScale: 1,
+                    pulsePhase: Math.random() * Math.PI * 2
                 };
             });
+        }
+
+        function createAmbientLighting() {
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+
+            // Add directional light
+            const directionalLight = new THREE.DirectionalLight(0x00ffff, 0.8);
+            directionalLight.position.set(100, 100, 50);
+            scene.add(directionalLight);
+
+            // Add point lights for dynamic effects
+            const pointLight1 = new THREE.PointLight(0x00ff88, 1, 200);
+            pointLight1.position.set(-200, 100, 0);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xff6b35, 1, 200);
+            pointLight2.position.set(200, -100, 0);
+            scene.add(pointLight2);
+
+            // Store lights for animation
+            scene.userData.lights = [pointLight1, pointLight2];
+        }
+
+        function createDataStreams() {
+            // Create flowing data streams between modules
+            const streamGeometry = new THREE.BufferGeometry();
+            const streamVertices = [];
+            const streamColors = [];
+
+            // Create curved paths between modules
+            for (let i = 0; i < 50; i++) {
+                const curve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 800,
+                        (Math.random() - 0.5) * 400,
+                        (Math.random() - 0.5) * 300
+                    ),
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 800,
+                        (Math.random() - 0.5) * 400,
+                        (Math.random() - 0.5) * 300
+                    ),
+                    new THREE.Vector3(
+                        (Math.random() - 0.5) * 800,
+                        (Math.random() - 0.5) * 400,
+                        (Math.random() - 0.5) * 300
+                    )
+                ]);
+
+                const points = curve.getPoints(20);
+                points.forEach(point => {
+                    streamVertices.push(point.x, point.y, point.z);
+                    streamColors.push(0, Math.random() * 0.5 + 0.5, 1);
+                });
+            }
+
+            streamGeometry.setAttribute('position', new THREE.Float32BufferAttribute(streamVertices, 3));
+            streamGeometry.setAttribute('color', new THREE.Float32BufferAttribute(streamColors, 3));
+
+            const streamMaterial = new THREE.PointsMaterial({
+                size: 1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.4
+            });
+
+            const dataStreams = new THREE.Points(streamGeometry, streamMaterial);
+            scene.add(dataStreams);
+            
+            scene.userData.dataStreams = dataStreams;
         }
 
         function animate() {
@@ -732,8 +831,33 @@
                     child.rotation.x += child.userData.rotationSpeed.x;
                     child.rotation.y += child.userData.rotationSpeed.y;
                     child.rotation.z += child.userData.rotationSpeed.z;
+                    
+                    // Animate pulsing core
+                    if (child.userData.core) {
+                        child.userData.pulsePhase += 0.05;
+                        const pulseScale = 1 + Math.sin(child.userData.pulsePhase) * 0.3;
+                        child.userData.core.scale.setScalar(pulseScale);
+                        
+                        // Update core opacity
+                        child.userData.core.material.opacity = 0.6 + Math.sin(child.userData.pulsePhase) * 0.3;
+                    }
                 }
             });
+
+            // Animate lighting effects
+            if (scene.userData.lights) {
+                const time = Date.now() * 0.001;
+                scene.userData.lights[0].position.x = Math.cos(time) * 300;
+                scene.userData.lights[0].position.z = Math.sin(time) * 300;
+                scene.userData.lights[1].position.x = Math.cos(time + Math.PI) * 300;
+                scene.userData.lights[1].position.z = Math.sin(time + Math.PI) * 300;
+            }
+
+            // Animate data streams
+            if (scene.userData.dataStreams) {
+                scene.userData.dataStreams.rotation.y += 0.002;
+                scene.userData.dataStreams.rotation.x += 0.001;
+            }
 
             // Camera movement based on mouse
             camera.position.x += (mouseX - camera.position.x) * 0.05;
