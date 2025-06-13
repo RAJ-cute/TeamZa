@@ -496,6 +496,48 @@ body {
     display: inline-block;
 }
 
+/* Badge Image Styling for Gamification */
+.badge-image-container {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.badge-image {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.badge-item:hover .badge-image-container {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+}
+
+.badge-item:hover .badge-image {
+    transform: scale(1.05);
+}
+
+.badge-item.badge-unlocked .badge-image-container {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-color: #fbbf24;
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+}
+
+.badge-item.badge-locked .badge-image-container {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
 /* Status Badges */
 .status-badge {
     padding: 8px 16px;

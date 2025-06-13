@@ -197,6 +197,73 @@
             </div>
             
             <div class="badge-container">
+                <!-- Custom Badge Gallery -->
+                <div class="badge-item badge-unlocked">
+                    <div class="badge-image-container">
+                        <img src="{{ url_for('static', filename='images/speed-demon-badge.png') }}" alt="Speed Demon" class="badge-image">
+                    </div>
+                    <h6>Speed Demon</h6>
+                    <p class="small text-muted mb-0">Complete tasks with exceptional speed and efficiency</p>
+                    <div class="mt-2">
+                        <span class="badge bg-warning small">Epic</span>
+                    </div>
+                </div>
+
+                <div class="badge-item badge-unlocked">
+                    <div class="badge-image-container">
+                        <img src="{{ url_for('static', filename='images/ethics-expert-badge.png') }}" alt="Ethics Expert" class="badge-image">
+                    </div>
+                    <h6>Ethics Expert</h6>
+                    <p class="small text-muted mb-0">Demonstrate exceptional ethical decision-making</p>
+                    <div class="mt-2">
+                        <span class="badge bg-info small">Rare</span>
+                    </div>
+                </div>
+
+                <div class="badge-item badge-unlocked">
+                    <div class="badge-image-container">
+                        <img src="{{ url_for('static', filename='images/challenge-master-badge.png') }}" alt="Challenge Master" class="badge-image">
+                    </div>
+                    <h6>Challenge Master</h6>
+                    <p class="small text-muted mb-0">Successfully complete multiple challenging assignments</p>
+                    <div class="mt-2">
+                        <span class="badge bg-danger small">Legendary</span>
+                    </div>
+                </div>
+
+                <div class="badge-item badge-unlocked">
+                    <div class="badge-image-container">
+                        <img src="{{ url_for('static', filename='images/champion-badge.png') }}" alt="Champion" class="badge-image">
+                    </div>
+                    <h6>Champion</h6>
+                    <p class="small text-muted mb-0">Achieve top performance across all metrics</p>
+                    <div class="mt-2">
+                        <span class="badge bg-danger small">Legendary</span>
+                    </div>
+                </div>
+
+                <div class="badge-item badge-unlocked">
+                    <div class="badge-image-container">
+                        <img src="{{ url_for('static', filename='images/rising-star-badge.png') }}" alt="Rising Star" class="badge-image">
+                    </div>
+                    <h6>Rising Star</h6>
+                    <p class="small text-muted mb-0">Show exceptional potential and growth</p>
+                    <div class="mt-2">
+                        <span class="badge bg-warning small">Epic</span>
+                    </div>
+                </div>
+
+                <div class="badge-item badge-unlocked">
+                    <div class="badge-image-container">
+                        <img src="{{ url_for('static', filename='images/first-steps-badge.png') }}" alt="First Steps" class="badge-image">
+                    </div>
+                    <h6>First Steps</h6>
+                    <p class="small text-muted mb-0">Complete your first challenge and start your journey</p>
+                    <div class="mt-2">
+                        <span class="badge bg-success small">Common</span>
+                    </div>
+                </div>
+
                 {% for badge in badges %}
                 <div class="badge-item badge-locked">
                     <div class="badge-icon">{{ badge.icon }}</div>
@@ -207,16 +274,6 @@
                     </div>
                 </div>
                 {% endfor %}
-                
-                {% if not badges %}
-                <div class="col-12">
-                    <div class="text-center py-5">
-                        <i class="fas fa-medal fa-4x text-muted mb-3"></i>
-                        <h4 class="text-muted">No Badges Available</h4>
-                        <p class="text-muted">HR admins can create badges for achievements!</p>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
 
