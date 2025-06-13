@@ -273,24 +273,30 @@ body {
     border-left: 4px solid #a8edea;
 }
 
-/* Dropdown Menus */
-.dropdown-menu {
-    background: rgba(0, 0, 0, 0.9) !important;
+/* Dropdown Menus - Comprehensive Styling */
+.dropdown-menu,
+.dropdown-menu[data-bs-popper] {
+    background: rgba(0, 0, 0, 0.95) !important;
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: var(--small-radius) !important;
     box-shadow: var(--card-shadow) !important;
-    padding: 0.5rem 0;
+    padding: 0.5rem 0 !important;
+    margin: 0 !important;
 }
 
+.dropdown-menu .dropdown-item,
 .dropdown-item {
     color: var(--text-primary) !important;
     background: transparent !important;
     transition: var(--transition);
-    padding: 0.5rem 1rem;
-    border-radius: 0;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0 !important;
+    border: none !important;
 }
 
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus,
 .dropdown-item:hover,
 .dropdown-item:focus {
     background: rgba(255, 255, 255, 0.1) !important;
@@ -298,14 +304,60 @@ body {
     transform: translateX(5px);
 }
 
+.dropdown-menu .dropdown-item:active,
 .dropdown-item:active {
     background: rgba(102, 126, 234, 0.2) !important;
     color: var(--text-primary) !important;
 }
 
+.dropdown-menu .dropdown-item.active,
+.dropdown-item.active {
+    background: rgba(102, 126, 234, 0.3) !important;
+    color: var(--text-primary) !important;
+}
+
 .dropdown-divider {
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    margin: 0.5rem 0;
+    margin: 0.5rem 0 !important;
+}
+
+/* Bootstrap Select Dropdown Options */
+.form-select option {
+    background: rgba(0, 0, 0, 0.9) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-select optgroup {
+    background: rgba(0, 0, 0, 0.9) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Navbar Dropdown Specific */
+.navbar .dropdown-menu {
+    background: rgba(0, 0, 0, 0.95) !important;
+}
+
+.navbar .dropdown-item {
+    color: var(--text-secondary) !important;
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+    background: rgba(102, 126, 234, 0.2) !important;
+    color: #667eea !important;
+}
+
+/* Force override any Bootstrap defaults */
+.dropdown-menu li > a,
+.dropdown-menu li > button {
+    color: var(--text-primary) !important;
+    background: transparent !important;
+}
+
+.dropdown-menu li > a:hover,
+.dropdown-menu li > button:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #667eea !important;
 }
 
 /* Modals */
