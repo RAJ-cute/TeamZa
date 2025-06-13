@@ -437,7 +437,10 @@
 
     <!-- Navigation -->
     <nav class="navbar">
-        <a href="#" class="logo">TeamZa</a>
+        <a href="#" class="logo d-flex align-items-center">
+            <img src="{{ url_for('static', filename='images/teamza-logo.svg') }}" alt="TeamZa" style="height: 30px; margin-right: 10px;">
+            TeamZa
+        </a>
         <ul class="nav-links">
             <li><a href="#features">Features</a></li>
             <li><a href="#platform">Platform</a></li>

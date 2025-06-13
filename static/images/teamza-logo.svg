@@ -1,44 +1,94 @@
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
     <defs>
         <linearGradient id="teamza-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" style="stop-color:#00d4aa;stop-opacity:1" />
             <stop offset="100%" style="stop-color:#0080ff;stop-opacity:1" />
         </linearGradient>
-        
-        <!-- Team circle illustration -->
-        <g id="team-circle">
-            <!-- Circular team arrangement -->
-            <circle cx="200" cy="60" r="45" fill="none" stroke="#00d4aa" stroke-width="3" opacity="0.3"/>
-            
-            <!-- Team members represented as circles -->
-            <circle cx="200" cy="25" r="6" fill="#00d4aa"/>
-            <circle cx="225" cy="35" r="6" fill="#0080ff"/>
-            <circle cx="235" cy="60" r="6" fill="#00d4aa"/>
-            <circle cx="225" cy="85" r="6" fill="#0080ff"/>
-            <circle cx="200" cy="95" r="6" fill="#00d4aa"/>
-            <circle cx="175" cy="85" r="6" fill="#0080ff"/>
-            <circle cx="165" cy="60" r="6" fill="#00d4aa"/>
-            <circle cx="175" cy="35" r="6" fill="#0080ff"/>
-            
-            <!-- Central hub -->
-            <circle cx="200" cy="60" r="8" fill="url(#teamza-gradient)"/>
-            
-            <!-- Connection lines -->
-            <line x1="200" y1="25" x2="200" y2="52" stroke="#00d4aa" stroke-width="2" opacity="0.6"/>
-            <line x1="225" y1="35" x2="208" y2="52" stroke="#0080ff" stroke-width="2" opacity="0.6"/>
-            <line x1="235" y1="60" x2="208" y2="60" stroke="#00d4aa" stroke-width="2" opacity="0.6"/>
-            <line x1="225" y1="85" x2="208" y2="68" stroke="#0080ff" stroke-width="2" opacity="0.6"/>
-            <line x1="200" y1="95" x2="200" y2="68" stroke="#00d4aa" stroke-width="2" opacity="0.6"/>
-            <line x1="175" y1="85" x2="192" y2="68" stroke="#0080ff" stroke-width="2" opacity="0.6"/>
-            <line x1="165" y1="60" x2="192" y2="60" stroke="#00d4aa" stroke-width="2" opacity="0.6"/>
-            <line x1="175" y1="35" x2="192" y2="52" stroke="#0080ff" stroke-width="2" opacity="0.6"/>
-        </g>
     </defs>
     
-    <!-- Team illustration -->
-    <use href="#team-circle" transform="translate(-150, 0) scale(0.8)"/>
+    <!-- Team circle illustration from user's logo -->
+    <g transform="translate(200, 100)">
+        <!-- Circular team arrangement -->
+        <circle cx="0" cy="0" r="80" fill="none" stroke="#00d4aa" stroke-width="4" opacity="0.3"/>
+        
+        <!-- Team members around the circle -->
+        <g id="team-members">
+            <!-- Person 1 - Top -->
+            <g transform="translate(0, -60)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 2 - Top Right -->
+            <g transform="translate(42, -42) rotate(45)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 3 - Right -->
+            <g transform="translate(60, 0) rotate(90)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 4 - Bottom Right -->
+            <g transform="translate(42, 42) rotate(135)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 5 - Bottom -->
+            <g transform="translate(0, 60) rotate(180)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 6 - Bottom Left -->
+            <g transform="translate(-42, 42) rotate(225)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 7 - Left -->
+            <g transform="translate(-60, 0) rotate(270)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+            
+            <!-- Person 8 - Top Left -->
+            <g transform="translate(-42, -42) rotate(315)">
+                <circle cx="0" cy="0" r="12" fill="#4fc3f7"/>
+                <path d="M-8,-4 L8,-4 L8,8 L-8,8 Z" fill="#26c6da"/>
+                <circle cx="0" cy="-8" r="6" fill="#ffcc80"/>
+            </g>
+        </g>
+        
+        <!-- Central hub with laptop -->
+        <circle cx="0" cy="0" r="15" fill="url(#teamza-gradient)"/>
+        <rect x="-8" y="-4" width="16" height="8" fill="white" rx="2"/>
+        <rect x="-6" y="-2" width="12" height="6" fill="#333" rx="1"/>
+        
+        <!-- Connection lines -->
+        <g stroke="#00d4aa" stroke-width="2" opacity="0.6">
+            <line x1="0" y1="-48" x2="0" y2="-15"/>
+            <line x1="34" y1="-34" x2="11" y2="-11"/>
+            <line x1="48" y1="0" x2="15" y2="0"/>
+            <line x1="34" y1="34" x2="11" y2="11"/>
+            <line x1="0" y1="48" x2="0" y2="15"/>
+            <line x1="-34" y1="34" x2="-11" y2="11"/>
+            <line x1="-48" y1="0" x2="-15" y2="0"/>
+            <line x1="-34" y1="-34" x2="-11" y2="-11"/>
+        </g>
+    </g>
     
     <!-- TeamZa text -->
-    <text x="120" y="80" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="700" fill="url(#teamza-gradient)">TeamZa</text>
+    <text x="60" y="250" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="700" fill="url(#teamza-gradient)">TeamZa</text>
 </svg>

@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TeamZa - HR Management Platform</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         * {
             margin: 0;
@@ -34,12 +34,11 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 60px 50px;
+            padding: 40px;
             width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .logo-container {
@@ -47,85 +46,67 @@
         }
 
         .logo-container img {
-            max-width: 200px;
-            height: auto;
+            height: 80px;
+            width: auto;
         }
 
         .login-title {
-            color: #333;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #3a7bd5, #3a6073);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 10px;
         }
 
         .login-subtitle {
             color: #666;
+            margin-bottom: 30px;
             font-size: 1rem;
-            margin-bottom: 40px;
-            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-align: left;
         }
 
         .form-label {
-            color: #444;
-            font-size: 0.95rem;
             font-weight: 600;
+            color: #333;
             margin-bottom: 8px;
             display: block;
         }
 
         .form-control {
-            width: 100%;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.8);
             border: 2px solid #e1e5e9;
             border-radius: 12px;
-            color: #333;
+            padding: 12px 16px;
             font-size: 1rem;
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
-            outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            background: rgba(255, 255, 255, 1);
-        }
-
-        .form-control::placeholder {
-            color: #999;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .login-button {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             border: none;
             border-radius: 12px;
-            color: white;
-            font-size: 1.1rem;
+            padding: 15px 30px;
+            font-size: 1rem;
             font-weight: 600;
-            cursor: pointer;
+            width: 100%;
             transition: all 0.3s ease;
-            margin-top: 20px;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            margin-bottom: 20px;
         }
 
         .login-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-        }
-
-        .login-button:active {
-            transform: translateY(0);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
         .divider {
@@ -146,126 +127,90 @@
 
         .divider span {
             background: rgba(255, 255, 255, 0.95);
+            padding: 0 20px;
             color: #666;
-            padding: 0 15px;
             font-size: 0.9rem;
         }
 
-        .quick-access {
+        .demo-buttons {
             display: flex;
-            gap: 15px;
-            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .quick-btn {
+        .demo-button {
             background: rgba(102, 126, 234, 0.1);
-            border: 2px solid rgba(102, 126, 234, 0.2);
+            border: 2px solid #667eea;
             color: #667eea;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            padding: 10px 20px;
             font-size: 0.9rem;
             font-weight: 600;
+            flex: 1;
+            transition: all 0.3s ease;
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .quick-btn:hover {
-            background: rgba(102, 126, 234, 0.2);
-            border-color: #667eea;
-            color: #667eea;
+        .demo-button:hover {
+            background: #667eea;
+            color: white;
             text-decoration: none;
-            transform: translateY(-1px);
-        }
-
-        .status-message {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .status-success {
-            background: rgba(40, 167, 69, 0.1);
-            border: 1px solid rgba(40, 167, 69, 0.3);
-            color: #28a745;
-        }
-
-        .status-warning {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            color: #ffc107;
         }
 
         .footer-text {
-            margin-top: 30px;
-            color: #888;
+            color: #666;
             font-size: 0.85rem;
+            margin-top: 20px;
         }
 
-        /* Responsive */
-        @media (max-width: 576px) {
-            .login-container {
-                margin: 20px;
-                padding: 40px 30px;
-            }
-            
-            .login-title {
-                font-size: 1.8rem;
-            }
-            
-            .quick-access {
-                flex-direction: column;
-            }
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo-container">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="TeamZa Logo" id="teamza-logo">
+            <img src="{{ url_for('static', filename='images/teamza-logo.svg') }}" alt="TeamZa Logo">
         </div>
-        
+
         <div class="login-title">TeamZa</div>
         <div class="login-subtitle">HR Management Platform</div>
-        
+
+        <div id="statusMessage"></div>
+
         <form id="loginForm">
             <div class="form-group">
                 <label class="form-label">Email Address</label>
                 <input type="email" class="form-control" placeholder="Enter your email" value="admin@teamza.com" required>
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label">Password</label>
                 <input type="password" class="form-control" placeholder="Enter your password" value="admin123" required>
             </div>
-            
+
             <button type="submit" class="login-button">
                 <i class="fas fa-sign-in-alt me-2"></i>Sign In to TeamZa
             </button>
         </form>
-        
+
         <div class="divider">
             <span>Quick Access</span>
         </div>
-        
-        <div class="quick-access">
-            <a href="#" class="quick-btn" onclick="quickLogin('hr')">
-                <i class="fas fa-user-tie"></i>HR Manager
+
+        <div class="demo-buttons">
+            <a href="/dashboard" class="demo-button">
+                <i class="fas fa-tachometer-alt me-1"></i>
+                Dashboard
             </a>
-            <a href="#" class="quick-btn" onclick="quickLogin('employee')">
-                <i class="fas fa-user"></i>Employee
+            <a href="/" class="demo-button">
+                <i class="fas fa-home me-1"></i>
+                Home
             </a>
         </div>
-        
-        <div class="status-message" id="statusMessage"></div>
-        
+
         <div class="footer-text">
             Secure access to your HR dashboard
         </div>
@@ -275,19 +220,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Set the TeamZa logo
-        document.getElementById('teamza-logo').src = 'data:image/svg+xml;base64,' + btoa(`
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
-                <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#00d4aa;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#0080ff;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <text x="10" y="40" font-family="Inter, sans-serif" font-size="36" font-weight="700" fill="url(#gradient)">TeamZa</text>
-            </svg>
-        `);
-
         let isLoggingIn = false;
 
         // Login form handling
@@ -298,56 +230,31 @@
 
         function initiateLogin() {
             if (isLoggingIn) return;
-            
+
             isLoggingIn = true;
             const message = document.getElementById('statusMessage');
             const button = document.querySelector('.login-button');
-            
+
             button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
             button.disabled = true;
-            
+
             showMessage('Verifying credentials...', 'warning');
-            
+
             // Simulate authentication process
             setTimeout(() => {
                 showMessage('Login successful! Redirecting...', 'success');
                 button.innerHTML = '<i class="fas fa-check me-2"></i>Success!';
-                
+
                 setTimeout(() => {
                     window.location.href = '/dashboard';
                 }, 1000);
-            }, 1500);
-        }
-
-        function quickLogin(type) {
-            if (isLoggingIn) return;
-            
-            const credentials = {
-                hr: { email: 'hr@teamza.com', role: 'HR Manager' },
-                employee: { email: 'employee@teamza.com', role: 'Employee' }
-            };
-            
-            const cred = credentials[type];
-            document.querySelector('input[type="email"]').value = cred.email;
-            
-            showMessage(`Quick login as ${cred.role}...`, 'warning');
-            
-            setTimeout(() => {
-                initiateLogin();
-            }, 500);
+            }, 2000);
         }
 
         function showMessage(text, type) {
-            const message = document.getElementById('statusMessage');
-            message.textContent = text;
-            message.className = `status-message status-${type}`;
-            message.style.opacity = '1';
+            const messageDiv = document.getElementById('statusMessage');
+            messageDiv.innerHTML = `<div class="alert alert-${type}">${text}</div>`;
         }
-
-        // Auto-focus first input
-        window.addEventListener('load', () => {
-            document.querySelector('input[type="email"]').focus();
-        });
     </script>
 </body>
 </html>
