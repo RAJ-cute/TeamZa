@@ -1025,12 +1025,99 @@ input, textarea, select, .form-control, .form-select {
     color: var(--text-primary) !important;
 }
 
-/* Final catch-all for visibility */
-body * {
+/* FINAL COMPREHENSIVE TEXT VISIBILITY FIXES */
+
+/* Force all text to be visible - most aggressive approach */
+* {
     color: var(--text-primary) !important;
 }
 
-/* But keep specific colored elements */
+/* Table specific fixes */
+table, table * {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+}
+
+.table, .table * {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+}
+
+.table tr, .table td, .table th {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.table tbody tr:hover {
+    background: var(--bg-secondary) !important;
+}
+
+.table tbody tr:hover * {
+    color: var(--text-primary) !important;
+}
+
+/* List and card content fixes */
+.list-group, .list-group * {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+}
+
+.card, .card * {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
+}
+
+.card-body, .card-body * {
+    color: var(--text-primary) !important;
+}
+
+/* Progress bar and badge fixes */
+.badge {
+    color: white !important;
+    background: var(--primary-color) !important;
+}
+
+.progress-bar {
+    color: white !important;
+}
+
+/* Department badge specific fixes */
+.badge-success, .badge-info, .badge-warning, .badge-secondary {
+    color: white !important;
+}
+
+/* Row and cell content fixes */
+tr, td, th, li {
+    color: var(--text-primary) !important;
+}
+
+/* Any remaining Bootstrap overrides */
+.text-dark, .text-light, .text-white, .text-black, .text-body {
+    color: var(--text-primary) !important;
+}
+
+/* Employee name and department fixes */
+.employee-name, .department-name, .employee-id {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}
+
+/* Avatar initials fixes */
+.avatar, .avatar * {
+    color: white !important;
+}
+
+/* Progress bar text */
+.progress, .progress * {
+    color: var(--text-primary) !important;
+}
+
+.progress-bar {
+    color: white !important;
+}
+
+/* Keep specific colored buttons and badges visible */
 .btn-primary, .btn-primary * {
     color: white !important;
 }
@@ -1051,7 +1138,35 @@ body * {
     color: white !important;
 }
 
-.badge, .badge * {
+/* Override any Bootstrap utility classes */
+.text-muted {
+    color: var(--text-muted) !important;
+    opacity: 1 !important;
+}
+
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+/* Ensure all div content is visible */
+div, span, p, h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+}
+
+/* Final safety net - apply to everything */
+body, body * {
+    color: var(--text-primary) !important;
+}
+
+/* Exception overrides for elements that should keep their colors */
+.btn-primary, .btn-primary *, 
+.btn-success, .btn-success *, 
+.btn-warning, .btn-warning *, 
+.btn-danger, .btn-danger *, 
+.btn-info, .btn-info *,
+.badge, .badge *,
+.progress-bar, .progress-bar *,
+.bg-primary, .bg-success, .bg-warning, .bg-danger, .bg-info {
     color: white !important;
 }
 
