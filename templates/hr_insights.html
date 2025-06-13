@@ -298,7 +298,7 @@
                                                     <td>{{ emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else 'N/A' }}</td>
                                                     <td>
                                                         {% if emp.current_salary %}
-                                                            <span class="fw-bold text-success">${{ "{:,.0f}"|format(emp.current_salary) }}</span>
+                                                            <span class="fw-bold text-success">${{ "{:,.0f}".format(emp.current_salary) }}</span>
                                                         {% else %}
                                                             <span class="text-muted">Not set</span>
                                                         {% endif %}
