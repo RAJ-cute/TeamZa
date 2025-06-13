@@ -459,6 +459,85 @@ def hr_insights():
                          employees=employees,
                          export_data=export_data)
 
+@app.route('/hr-data-management', methods=['GET', 'POST'])
+def hr_data_management():
+    """HR Data Management - Add/Update employee data, increments, promotions"""
+    from datetime import datetime
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add_increment':
+            employee_id = request.form.get('employee_id')
+            increment_amount = float(request.form.get('increment_amount'))
+            increment_date = request.form.get('increment_date')
+            
+            employee = Employee.query.get(employee_id)
+            if employee:
+                employee.last_hike_date = increment_date
+                db.session.commit()
+                flash(f'Increment of {increment_amount}% recorded for {employee.name}', 'success')
+            else:
+                flash('Employee not found', 'error')
+                
+        elif action == 'add_promotion':
+            employee_id = request.form.get('employee_id')
+            new_position = request.form.get('new_position')
+            promotion_date = request.form.get('promotion_date')
+            
+            employee = Employee.query.get(employee_id)
+            if employee:
+                employee.position = new_position
+                employee.last_promotion_date = promotion_date
+                db.session.commit()
+                flash(f'Promotion to {new_position} recorded for {employee.name}', 'success')
+            else:
+                flash('Employee not found', 'error')
+                
+        elif action == 'update_performance':
+            employee_id = request.form.get('employee_id')
+            performance_score = float(request.form.get('performance_score'))
+            manager_rating = float(request.form.get('manager_rating'))
+            
+            employee = Employee.query.get(employee_id)
+            if employee:
+                employee.performance_score = performance_score
+                employee.manager_rating = manager_rating
+                db.session.commit()
+                flash(f'Performance updated for {employee.name}', 'success')
+            else:
+                flash('Employee not found', 'error')
+                
+        elif action == 'add_employee':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            department = request.form.get('department')
+            position = request.form.get('position')
+            hire_date = datetime.strptime(request.form.get('hire_date'), '%Y-%m-%d')
+            
+            employee = Employee(
+                name=name,
+                email=email,
+                department=department,
+                position=position,
+                hire_date=hire_date,
+                performance_score=7.0,
+                manager_rating=7.0
+            )
+            db.session.add(employee)
+            db.session.commit()
+            flash(f'Employee {name} added successfully', 'success')
+        
+        return redirect(url_for('hr_data_management'))
+    
+    # Get all employees and departments for forms
+    employees = Employee.query.order_by(Employee.name).all()
+    departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Product']
+    
+    return render_template('hr_data_management.html',
+                         employees=employees,
+                         departments=departments)
+
 @app.route('/api/quiz/<module_name>')
 def get_quiz(module_name):
     """API endpoint to get quiz data"""
