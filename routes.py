@@ -1,98 +1,6 @@
-
-
-        
-                                 
-                                      
-        
-        
-            
-             
-      
-                                                      
-                                                              
-
-        
-            
-        
-        
-                        
-
-                        
-                       
-                    
-                                  
-                        
-                       
-                    
-                   
-                   
-                   
-                   
-                                                    
- 
- 
-
-            
- 
- 
-
-                
-               
-               
-               
-               
-               
-               
-                              
- 
-
-        
-                
- 
- 
-
-     
-
-                    
-     
-
-            
-            
-        
-        
-        
-       
-             
-
-        
-                          
-
-                
-                                                                                                                                                                                                                                        
-                    
-                   
-                                                                                                                                                    
-                    
-                   
-                                                                                                                                                                                                                                                                                                     
-                                         name=name,                                                                                                                                                                                                                                                                        
-        
-        
-       ]
-      
-
-        
-        
-
-        
-        
-
-
-
-            
-           from flask import render_template, request, jsonify, flash, redirect, url_for
+from flask import render_template, request, jsonify, flash, redirect, url_for
 from app import app, db
-from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview
+from models import Employee, Resume, LearningProgress, WellnessCheck, PerformanceReview, HRTransaction, EmployeeHistory, CompanyMetrics
 from utils.nlp_processor import NLPProcessor
 from utils.hr_analytics import HRAnalytics
 from utils.document_parser import DocumentParser
@@ -106,11 +14,12 @@ import json
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+import data.mock_data as mock_data
 
 nlp_processor = NLPProcessor()
 hr_analytics = HRAnalytics()
 document_parser = DocumentParser()
-mock_data = MockDataGenerator()
+mock_data_gen = MockDataGenerator()
 real_data_loader = RealDataLoader() if RealDataLoader else None
 
 @app.route('/')
@@ -306,7 +215,7 @@ def leadership_potential():
                 'email': employee.email,
                 'department': employee.department,
                 'position': employee.position,
-                'hire_date': employee.hire_date,  # Keep as datetime object
+                'hire_date': employee.hire_date,
                 'performance_score': employee.performance_score,
                 'manager_rating': employee.manager_rating,
                 'experience_years': employee.experience_years,
