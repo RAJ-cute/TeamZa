@@ -42,27 +42,51 @@ def dashboard():
     """HR Management Dashboard showing overview of all employee data"""
     # Get comprehensive HR stats for dashboard
     total_employees = Employee.query.count()
-    total_resumes = Resume.query.count()
-    active_learning = LearningProgress.query.filter_by(completed=False).count()
-    recent_wellness = WellnessCheck.query.order_by(WellnessCheck.check_date.desc()).limit(5).all()
+    active_employees = Employee.query.filter_by(status='active').count()
+    
+    # Calculate average performance and wellness scores
+    avg_performance = db.session.query(db.func.avg(Employee.performance_score)).scalar() or 0
+    
+    # Calculate wellness scores from health metrics or wellness checks
+    wellness_scores = db.session.query(HealthMetrics.mood_score).all()
+    if wellness_scores:
+        avg_wellness = sum([score[0] for score in wellness_scores if score[0]]) / len([score[0] for score in wellness_scores if score[0]])
+    else:
+        avg_wellness = 0
 
-    # Department distribution
-    dept_stats = db.session.query(Employee.department, db.func.count(Employee.id)).group_by(Employee.department).all()
-
-    # Recent performance reviews
-    recent_reviews = PerformanceReview.query.order_by(PerformanceReview.created_at.desc()).limit(5).all()
-
-    # High performers
-    top_performers = Employee.query.filter(Employee.performance_score >= 8.0).order_by(Employee.performance_score.desc()).limit(5).all()
+    # Department statistics with performance and wellness data
+    department_stats = {}
+    departments = db.session.query(Employee.department).distinct().all()
+    
+    for dept in departments:
+        dept_name = dept[0]
+        dept_employees = Employee.query.filter_by(department=dept_name).all()
+        
+        if dept_employees:
+            dept_count = len(dept_employees)
+            dept_performance = sum([emp.performance_score for emp in dept_employees if emp.performance_score]) / dept_count
+            
+            # Get wellness scores for department employees
+            dept_wellness_scores = []
+            for emp in dept_employees:
+                health_metrics = HealthMetrics.query.filter_by(employee_id=emp.id).first()
+                if health_metrics and health_metrics.mood_score:
+                    dept_wellness_scores.append(health_metrics.mood_score)
+            
+            dept_wellness = sum(dept_wellness_scores) / len(dept_wellness_scores) if dept_wellness_scores else 0
+            
+            department_stats[dept_name] = {
+                'count': dept_count,
+                'avg_performance': dept_performance,
+                'avg_wellness': dept_wellness
+            }
 
     return render_template('index.html', 
                          total_employees=total_employees,
-                         total_resumes=total_resumes,
-                         active_learning=active_learning,
-                         recent_wellness=recent_wellness,
-                         dept_stats=dept_stats,
-                         recent_reviews=recent_reviews,
-                         top_performers=top_performers)
+                         active_employees=active_employees,
+                         avg_performance=avg_performance,
+                         avg_wellness=avg_wellness,
+                         department_stats=department_stats)
 
 @app.route('/employee-management')
 def employee_management():
