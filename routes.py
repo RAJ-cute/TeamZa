@@ -22,20 +22,15 @@ document_parser = DocumentParser()
 mock_data_gen = MockDataGenerator()
 real_data_loader = RealDataLoader() if RealDataLoader else None
 
-@app.route('/login')
-def login():
-    """Secure login interface for HR Command Center"""
-    return render_template('login.html')
+@app.route('/')
+def index():
+    """Professional landing page with company info and features"""
+    return render_template('landing.html')
 
 @app.route('/hr-command-center-main')
 def hr_command_center():
     """3D Neural Network HR Command Center Main Interface"""
     return render_template('hr_command_center_main.html')
-
-@app.route('/')
-def index():
-    """Redirect to login for secure access"""
-    return redirect(url_for('login'))
 
 @app.route('/dashboard')
 def dashboard():
