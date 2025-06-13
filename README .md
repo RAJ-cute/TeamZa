@@ -6,10 +6,6 @@
   
   **Revolutionary AI-powered platform that transforms talent management, employee analytics, and workforce optimization**
   
-  [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-  [![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)](https://flask.palletsprojects.com)
-  [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-1.4+-orange.svg)](https://sqlalchemy.org)
-  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 </div>
 
 ## 🚀 Overview
@@ -241,107 +237,25 @@ teamza-hr-platform/
 - **Modern UI**: Clean, professional interface
 - **Accessibility**: WCAG compliant design
 
-## 🔒 Security Features
 
-- **Data Validation**: Input sanitization and validation
-- **Secure File Upload**: Safe file handling for resumes
-- **Session Management**: Secure user sessions
-- **SQL Injection Protection**: ORM-based database queries
-
-## 📈 Performance Metrics
-
-- **97% AI Accuracy Rate** for resume screening
-- **850ms Processing Speed** for document analysis
-- **99.9% Uptime** reliability
-- **10K+ Resumes** processed capability
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow PEP 8 style guidelines
-- Add tests for new features
-- Update documentation for API changes
-- Ensure responsive design compatibility
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Database Not Initializing**
-   ```bash
-   # Delete the database and restart
-   rm instance/hr_platform.db
-   python app.py
-   ```
-
-2. **Import Errors**
-   ```bash
-   # Reinstall dependencies
-   pip install --upgrade -r requirements.txt
-   ```
-
-3. **Port Already in Use**
-   ```bash
-   # Kill process on port 5000
-   lsof -ti:5000 | xargs kill -9
-   ```
-
-## 📋 Roadmap
 
 ### Upcoming Features
 
-- [ ] Advanced AI/ML models for predictive analytics
+- [ ] Advanced AI/ML models
+- [ ] Trained on anonymized performance data to identify future high-potential candidates
+- [ ] Semantic matching between job roles and current skills using transformer-based embeddings
+- [ ] Lightweight NLP model to assess emotional tone from employee feedback.
+- [ ] Natural language voice interface for initial candidate screening (using Whisper/OpenAI/Deepgram).
 - [ ] Integration with popular HR systems (Workday, BambooHR)
 - [ ] Mobile application for iOS and Android
 - [ ] Advanced reporting and dashboard customization
 - [ ] Multi-language support
 - [ ] Real-time notifications and alerts
 
-### Version History
 
-- **v1.0.0** - Initial release with core HR modules
-- **v1.1.0** - Added gamification system
-- **v1.2.0** - Enhanced analytics and reporting
-- **v1.3.0** - Improved AI accuracy and performance
 
-## 📞 Support
 
-### Getting Help
 
-- **Documentation**: Refer to this README and inline code comments
-- **Issues**: Create an issue on the repository for bugs or feature requests
-- **Community**: Join our community discussions
-
-### Contact Information
-
-- **Email**: support@teamza.com
-- **Website**: https://teamza.com
-- **Documentation**: https://docs.teamza.com
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Flask community for the excellent web framework
-- SQLAlchemy team for the robust ORM
-- Bootstrap team for the responsive UI framework
-- All contributors who have helped improve this platform
-
-## 📊 Stats
-
-![GitHub stars](https://img.shields.io/github/stars/teamza/hr-platform)
-![GitHub forks](https://img.shields.io/github/forks/teamza/hr-platform)
-![GitHub issues](https://img.shields.io/github/issues/teamza/hr-platform)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/teamza/hr-platform)
 
 ---
 
