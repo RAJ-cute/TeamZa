@@ -264,16 +264,7 @@
                     </div>
                 </div>
 
-                {% for badge in badges %}
-                <div class="badge-item badge-locked">
-                    <div class="badge-icon">{{ badge.icon }}</div>
-                    <h6>{{ badge.name }}</h6>
-                    <p class="small text-muted mb-0">{{ badge.description or 'Complete challenges to unlock' }}</p>
-                    <div class="mt-2">
-                        <span class="badge bg-secondary small">{{ badge.rarity.title() }}</span>
-                    </div>
-                </div>
-                {% endfor %}
+
             </div>
         </div>
 
