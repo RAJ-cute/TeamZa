@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Neural Command Center</title>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', monospace;
+            background: #0a0a0a;
+            overflow: hidden;
+            height: 100vh;
+            color: #00ffff;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Neural Network HUD */
+        .neural-hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        /* Top Control Bar */
+        .control-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(180deg, rgba(0,20,30,0.9) 0%, rgba(0,10,15,0.7) 100%);
+            border-bottom: 2px solid rgba(0,255,255,0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            pointer-events: auto;
+        }
+
+        .system-logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0,255,255,0.8);
+        }
+
+        .neural-indicator {
+            margin-right: 15px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #00ffff;
+            border-radius: 50%;
+            position: relative;
+            animation: neuralPulse 2s ease-in-out infinite;
+        }
+
+        .neural-indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: coreGlow 1s ease-in-out infinite alternate;
+        }
+
+        .system-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: rgba(0,255,255,0.7);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #000;
+            font-weight: 700;
+        }
+
+        /* Central Neural Hub */
+        .neural-hub {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 600px;
+            pointer-events: auto;
+        }
+
+        .hub-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,255,0.1) 0%, rgba(0,255,255,0.05) 50%, transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: hubRotate 20s linear infinite;
+        }
+
+        .hub-core::before {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px solid rgba(0,255,255,0.5);
+            border-radius: 50%;
+            animation: hubRotate 15s linear infinite reverse;
+        }
+
+        .hub-core::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 50%;
+            animation: hubRotate 10s linear infinite;
+        }
+
+        .core-icon {
+            font-size: 3rem;
+            color: #00ffff;
+            z-index: 1;
+            animation: coreGlow 2s ease-in-out infinite alternate;
+        }
+
+        /* Module Orbits */
+        .module-orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(0,255,255,0.2);
+            border-radius: 50%;
+        }
+
+        .orbit-1 { width: 300px; height: 300px; animation: orbitRotate 30s linear infinite; }
+        .orbit-2 { width: 450px; height: 450px; animation: orbitRotate 45s linear infinite reverse; }
+        .orbit-3 { width: 600px; height: 600px; animation: orbitRotate 60s linear infinite; }
+
+        .module-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(0,255,255,0.1);
+            border: 2px solid rgba(0,255,255,0.5);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .module-node:hover {
+            background: rgba(0,255,255,0.3);
+            border-color: #00ffff;
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(0,255,255,0.5);
+        }
+
+        .module-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .module-label {
+            font-size: 0.6rem;
+            text-align: center;
+            line-height: 1;
+        }
+
+        /* Position modules on orbits */
+        .module-1 { top: -40px; left: calc(50% - 40px); }
+        .module-2 { top: calc(50% - 40px); right: -40px; }
+        .module-3 { bottom: -40px; left: calc(50% - 40px); }
+        .module-4 { top: calc(50% - 40px); left: -40px; }
+
+        .orbit-2 .module-1 { top: -40px; right: calc(25% - 40px); }
+        .orbit-2 .module-2 { top: calc(25% - 40px); right: -40px; }
+        .orbit-2 .module-3 { bottom: -40px; right: calc(25% - 40px); }
+        .orbit-2 .module-4 { bottom: calc(25% - 40px); left: -40px; }
+
+        /* Side Panels */
+        .side-panel {
+            position: absolute;
+            width: 300px;
+            height: calc(100vh - 80px);
+            top: 80px;
+            background: rgba(0,20,30,0.8);
+            border: 1px solid rgba(0,255,255,0.2);
+            backdrop-filter: blur(15px);
+            pointer-events: auto;
+            overflow-y: auto;
+        }
+
+        .panel-left { left: 0; border-right: 2px solid rgba(0,255,255,0.3); }
+        .panel-right { right: 0; border-left: 2px solid rgba(0,255,255,0.3); }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0,255,255,0.2);
+            font-weight: 700;
+            color: #00ffff;
+            text-align: center;
+        }
+
+        .panel-content {
+            padding: 20px;
+        }
+
+        .metric-card {
+            background: rgba(0,255,255,0.05);
+            border: 1px solid rgba(0,255,255,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(0,255,255,0.1);
+            border-color: rgba(0,255,255,0.5);
+        }
+
+        .metric-title {
+            font-size: 0.8rem;
+            color: rgba(0,255,255,0.8);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0,255,255,0.1);
+            font-size: 0.8rem;
+        }
+
+        .activity-time {
+            color: rgba(0,255,255,0.6);
+            margin-right: 10px;
+        }
+
+        /* Neural Connections */
+        .neural-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(0,255,255,0.5), transparent);
+            animation: dataFlow 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* Bottom Command Interface */
+        .command-interface {
+            position: absolute;
+            bottom: 0;
+            left: 300px;
+            right: 300px;
+            height: 100px;
+            background: rgba(0,20,30,0.9);
+            border-top: 2px solid rgba(0,255,255,0.3);
+            border-left: 1px solid rgba(0,255,255,0.2);
+            border-right: 1px solid rgba(0,255,255,0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            pointer-events: auto;
+        }
+
+        .command-button {
+            background: rgba(0,255,255,0.1);
+            border: 2px solid rgba(0,255,255,0.3);
+            border-radius: 8px;
+            padding: 15px 25px;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .command-button:hover {
+            background: rgba(0,255,255,0.2);
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+            color: #00ffff;
+            text-decoration: none;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,0,0,0.1);
+            border: 1px solid rgba(255,0,0,0.3);
+            color: #ff4757;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            font-family: 'Orbitron', monospace;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,0,0,0.2);
+            box-shadow: 0 0 15px rgba(255,0,0,0.3);
+            color: #ff4757;
+            text-decoration: none;
+        }
+
+        /* Animations */
+        @keyframes neuralPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+            50% { box-shadow: 0 0 40px rgba(0,255,255,0.8); }
+        }
+
+        @keyframes coreGlow {
+            0% { box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+            100% { box-shadow: 0 0 40px rgba(0,255,255,0.8); }
+        }
+
+        @keyframes hubRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes orbitRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes dataFlow {
+            0% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .side-panel { width: 250px; }
+            .command-interface { left: 250px; right: 250px; }
+            .neural-hub { width: 600px; height: 450px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Neural HUD -->
+    <div class="neural-hud">
+        <!-- Top Control Bar -->
+        <div class="control-bar">
+            <div class="system-logo">
+                <div class="neural-indicator"></div>
+                HR NEURAL COMMAND CENTER
+            </div>
+            
+            <div class="system-stats">
+                <div class="stat-item">
+                    <div class="stat-value">847</div>
+                    <div class="stat-label">EMPLOYEES</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">99.7%</div>
+                    <div class="stat-label">AI EFFICIENCY</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">1,247</div>
+                    <div class="stat-label">RESUMES ANALYZED</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">LIVE</div>
+                    <div class="stat-label">DATA STREAM</div>
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="profile-avatar">HC</div>
+                <div>
+                    <div style="font-weight: 700;">HR COMMANDER</div>
+                    <div style="font-size: 0.7rem; color: rgba(0,255,255,0.7);">LEVEL 8 • NEURAL ACCESS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Central Neural Hub -->
+        <div class="neural-hub">
+            <!-- Hub Core -->
+            <div class="hub-core">
+                <i class="fas fa-brain core-icon"></i>
+            </div>
+
+            <!-- Module Orbits -->
+            <div class="module-orbit orbit-1">
+                <a href="{{ url_for('resume_screening') }}" class="module-node module-1">
+                    <i class="fas fa-file-alt module-icon"></i>
+                    <div class="module-label">RESUME<br>SCANNER</div>
+                </a>
+                <a href="{{ url_for('talent_sourcing') }}" class="module-node module-2">
+                    <i class="fas fa-search module-icon"></i>
+                    <div class="module-label">TALENT<br>HUNTER</div>
+                </a>
+                <a href="{{ url_for('employee_management') }}" class="module-node module-3">
+                    <i class="fas fa-users module-icon"></i>
+                    <div class="module-label">EMPLOYEE<br>MATRIX</div>
+                </a>
+                <a href="{{ url_for('wellness_tracker') }}" class="module-node module-4">
+                    <i class="fas fa-heart module-icon"></i>
+                    <div class="module-label">WELLNESS<br>MONITOR</div>
+                </a>
+            </div>
+
+            <div class="module-orbit orbit-2">
+                <a href="{{ url_for('leadership_potential') }}" class="module-node module-1">
+                    <i class="fas fa-crown module-icon"></i>
+                    <div class="module-label">LEADERSHIP<br>PREDICTOR</div>
+                </a>
+                <a href="{{ url_for('appraisal_dashboard') }}" class="module-node module-2">
+                    <i class="fas fa-clipboard-check module-icon"></i>
+                    <div class="module-label">PERFORMANCE<br>AI</div>
+                </a>
+                <a href="{{ url_for('learning_module') }}" class="module-node module-3">
+                    <i class="fas fa-graduation-cap module-icon"></i>
+                    <div class="module-label">LEARNING<br>ENGINE</div>
+                </a>
+                <a href="{{ url_for('skill_gap_analysis') }}" class="module-node module-4">
+                    <i class="fas fa-puzzle-piece module-icon"></i>
+                    <div class="module-label">SKILL<br>ANALYZER</div>
+                </a>
+            </div>
+
+            <div class="module-orbit orbit-3"></div>
+        </div>
+
+        <!-- Left Panel - System Metrics -->
+        <div class="side-panel panel-left">
+            <div class="panel-header">
+                <i class="fas fa-chart-line"></i> NEURAL METRICS
+            </div>
+            <div class="panel-content">
+                <div class="metric-card">
+                    <div class="metric-title">PREDICTION ACCURACY</div>
+                    <div class="metric-value">97.3%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">PROCESSING SPEED</div>
+                    <div class="metric-value">847ms</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">ACTIVE CONNECTIONS</div>
+                    <div class="metric-value">12,890</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">NEURAL LOAD</div>
+                    <div class="metric-value">73%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">QUANTUM ENCRYPTION</div>
+                    <div class="metric-value">ACTIVE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Activity Feed -->
+        <div class="side-panel panel-right">
+            <div class="panel-header">
+                <i class="fas fa-satellite-dish"></i> NEURAL ACTIVITY
+            </div>
+            <div class="panel-content">
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <span class="activity-time">12:47</span>
+                        Resume batch processed: 47 candidates
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:45</span>
+                        Leadership potential identified: Sarah Chen
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:44</span>
+                        Skill gap analysis completed: Engineering
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:42</span>
+                        Performance prediction updated: 23 employees
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:40</span>
+                        Wellness alert: 3 employees flagged
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:38</span>
+                        Neural network optimization complete
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:35</span>
+                        Talent matching algorithm updated
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">12:33</span>
+                        System backup completed successfully
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Command Interface -->
+        <div class="command-interface">
+            <a href="{{ url_for('hr_insights') }}" class="command-button">
+                <i class="fas fa-chart-bar"></i>
+                ANALYTICS SUITE
+            </a>
+            <a href="{{ url_for('gamification') }}" class="command-button">
+                <i class="fas fa-trophy"></i>
+                GAMIFICATION HUB
+            </a>
+            <a href="{{ url_for('hr_data_management') }}" class="command-button">
+                <i class="fas fa-database"></i>
+                DATA MANAGEMENT
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="command-button">
+                <i class="fas fa-th-large"></i>
+                LEGACY INTERFACE
+            </a>
+        </div>
+
+        <!-- Logout Button -->
+        <a href="/login" class="logout-btn">
+            <i class="fas fa-power-off"></i> LOGOUT
+        </a>
+    </div>
+
+    <script>
+        let scene, camera, renderer, neuralNetwork, connections;
+        let mouseX = 0, mouseY = 0;
+
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x000000, 100, 2000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+            camera.position.z = 500;
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            createNeuralNetwork();
+            createDataParticles();
+            createQuantumField();
+            
+            animate();
+        }
+
+        function createNeuralNetwork() {
+            // Create neural network nodes
+            const nodeGeometry = new THREE.SphereGeometry(3, 16, 16);
+            const nodeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const nodes = [];
+            const nodeCount = 200;
+
+            for (let i = 0; i < nodeCount; i++) {
+                const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+                
+                // Position nodes in 3D space
+                const phi = Math.acos(-1 + (2 * i) / nodeCount);
+                const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+                
+                const radius = 300 + Math.random() * 200;
+                node.position.x = radius * Math.cos(theta) * Math.sin(phi);
+                node.position.y = radius * Math.sin(theta) * Math.sin(phi);
+                node.position.z = radius * Math.cos(phi);
+                
+                node.userData = {
+                    originalPosition: node.position.clone(),
+                    pulsePhase: Math.random() * Math.PI * 2,
+                    pulseSpeed: 0.02 + Math.random() * 0.03
+                };
+                
+                scene.add(node);
+                nodes.push(node);
+            }
+
+            // Create connections between nodes
+            const connectionGeometry = new THREE.BufferGeometry();
+            const connectionVertices = [];
+            const connectionColors = [];
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node1 = nodes[i];
+                
+                // Connect to nearby nodes
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const node2 = nodes[j];
+                    const distance = node1.position.distanceTo(node2.position);
+                    
+                    if (distance < 150 && Math.random() > 0.7) {
+                        connectionVertices.push(
+                            node1.position.x, node1.position.y, node1.position.z,
+                            node2.position.x, node2.position.y, node2.position.z
+                        );
+                        
+                        const intensity = Math.random();
+                        connectionColors.push(
+                            0, intensity, 1,
+                            0, intensity, 1
+                        );
+                    }
+                }
+            }
+
+            connectionGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionVertices, 3));
+            connectionGeometry.setAttribute('color', new THREE.Float32BufferAttribute(connectionColors, 3));
+
+            const connectionMaterial = new THREE.LineBasicMaterial({
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.3
+            });
+
+            connections = new THREE.LineSegments(connectionGeometry, connectionMaterial);
+            scene.add(connections);
+
+            scene.userData.nodes = nodes;
+        }
+
+        function createDataParticles() {
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleVertices = [];
+            const particleColors = [];
+
+            for (let i = 0; i < 3000; i++) {
+                particleVertices.push(
+                    (Math.random() - 0.5) * 3000,
+                    (Math.random() - 0.5) * 3000,
+                    (Math.random() - 0.5) * 1500
+                );
+
+                const hue = Math.random();
+                particleColors.push(
+                    hue < 0.5 ? 0 : hue,
+                    hue < 0.5 ? hue + 0.5 : 1,
+                    1
+                );
+            }
+
+            particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particleVertices, 3));
+            particleGeometry.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 2,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+            
+            scene.userData.particles = particles;
+        }
+
+        function createQuantumField() {
+            // Create quantum field visualization
+            const fieldGeometry = new THREE.RingGeometry(400, 800, 64);
+            const fieldMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.05,
+                side: THREE.DoubleSide
+            });
+
+            const quantumField = new THREE.Mesh(fieldGeometry, fieldMaterial);
+            quantumField.rotation.x = Math.PI / 2;
+            scene.add(quantumField);
+
+            scene.userData.quantumField = quantumField;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Animate neural network nodes
+            if (scene.userData.nodes) {
+                scene.userData.nodes.forEach(node => {
+                    node.userData.pulsePhase += node.userData.pulseSpeed;
+                    const pulse = Math.sin(node.userData.pulsePhase);
+                    node.scale.setScalar(1 + pulse * 0.3);
+                    node.material.opacity = 0.6 + pulse * 0.3;
+                });
+            }
+
+            // Animate connections
+            if (connections) {
+                connections.rotation.y += 0.002;
+                connections.material.opacity = 0.2 + Math.sin(time * 2) * 0.1;
+            }
+
+            // Animate particles
+            if (scene.userData.particles) {
+                scene.userData.particles.rotation.y += 0.001;
+                scene.userData.particles.rotation.x += 0.0005;
+            }
+
+            // Animate quantum field
+            if (scene.userData.quantumField) {
+                scene.userData.quantumField.rotation.z += 0.005;
+                scene.userData.quantumField.material.opacity = 0.03 + Math.sin(time) * 0.02;
+            }
+
+            // Camera movement based on mouse
+            camera.position.x += (mouseX - camera.position.x) * 0.02;
+            camera.position.y += (-mouseY - camera.position.y) * 0.02;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+
+        // Mouse movement tracking
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - window.innerWidth / 2) / 10;
+            mouseY = (event.clientY - window.innerHeight / 2) / 10;
+        });
+
+        // Window resize handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize scene
+        window.addEventListener('load', init);
+
+        // Simulate real-time activity updates
+        function updateActivity() {
+            const activities = [
+                "Neural pattern recognized in candidate pool",
+                "Performance prediction model updated",
+                "Skill gap analysis completed for Marketing",
+                "Leadership trait identified: Innovation",
+                "Wellness anomaly detected and resolved",
+                "Employee satisfaction index recalculated",
+                "Talent acquisition algorithm optimized",
+                "Compensation analysis completed",
+                "Learning path recommendation generated",
+                "Team dynamics analysis updated"
+            ];
+
+            const activityFeed = document.querySelector('.activity-feed');
+            const newItem = document.createElement('div');
+            newItem.className = 'activity-item';
+            
+            const time = new Date().toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            newItem.innerHTML = `<span class="activity-time">${time}</span>${activity}`;
+            
+            activityFeed.insertBefore(newItem, activityFeed.firstChild);
+            
+            // Keep only last 10 items
+            while (activityFeed.children.length > 10) {
+                activityFeed.removeChild(activityFeed.lastChild);
+            }
+        }
+
+        // Update activity every 10 seconds
+        setInterval(updateActivity, 10000);
+
+        // Add click effects to modules
+        document.querySelectorAll('.module-node').forEach(node => {
+            node.addEventListener('click', (e) => {
+                // Create ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.position = 'absolute';
+                ripple.style.width = '20px';
+                ripple.style.height = '20px';
+                ripple.style.background = 'rgba(0,255,255,0.5)';
+                ripple.style.borderRadius = '50%';
+                ripple.style.transform = 'translate(-50%, -50%)';
+                ripple.style.animation = 'rippleEffect 0.6s ease-out';
+                ripple.style.pointerEvents = 'none';
+                
+                const rect = node.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                
+                node.appendChild(ripple);
+                
+                setTimeout(() => {
+                    node.removeChild(ripple);
+                }, 600);
+            });
+        });
+
+        // Add ripple effect animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes rippleEffect {
+                0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
