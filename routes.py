@@ -372,155 +372,277 @@ def hr_insights():
     
     # Get all employees for individual insights tab
     employees = Employee.query.filter_by(status='active').all()
-
-    # Employee leaderboard based on performance
-    employee_leaderboard = sorted(
-        [(emp.name, emp.performance_score or 7.0, emp.department) for emp in employees],
-        key=lambda x: x[1], reverse=True
-    )[:10]
-
-    # Monthly trends (mock data)
-    monthly_trends = {
-        'performance': [
-            {'month': 'Jan', 'avg_score': 7.8},
-            {'month': 'Feb', 'avg_score': 8.1},
-            {'month': 'Mar', 'avg_score': 8.3},
-            {'month': 'Apr', 'avg_score': 8.0},
-            {'month': 'May', 'avg_score': 8.4},
-            {'month': 'Jun', 'avg_score': 8.6}
-        ],
-        'headcount': [
-            {'month': 'Jan', 'count': total_employees - 5},
-            {'month': 'Feb', 'count': total_employees - 3},
-            {'month': 'Mar', 'count': total_employees - 2},
-            {'month': 'Apr', 'count': total_employees - 1},
-            {'month': 'May', 'count': total_employees},
-            {'month': 'Jun', 'count': total_employees + 2}
-        ]
-    }
-
-    # Wellness overview
-    wellness_summary = {
-        'green': random.randint(60, 80),
-        'yellow': random.randint(15, 25),
-        'red': random.randint(5, 15)
-    }
-
-    # Prepare data for Excel export
-    export_data = {
-        'company_summary': {
-            'total_employees': total_employees,
-            'departments': dept_stats,
-            'avg_performance': round(avg_performance, 2),
-            'increments': increment_data,
-            'joining_leaving': joining_leaving_data
-        },
-        'employee_details': [
-            {
-                'name': emp.name,
-                'department': emp.department,
-                'position': emp.position,
-                'performance_score': emp.performance_score or 7.0,
-                'hire_date': emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else 'N/A',
-                'last_increment': emp.last_hike_date or 'N/A',
-                'manager_rating': emp.manager_rating or 7.0,
-                'skill_gaps': emp.skill_gaps or 'None identified'
-            }
-            for emp in employees
-        ]
-    }
+    
+    # Extract real performance data
+    avg_performance = performance_data['average_rating']
+    top_performers = [emp for emp in employees if (emp.performance_score or 0) >= 8.5]
 
     return render_template('hr_insights.html',
                          total_employees=total_employees,
                          dept_stats=dept_stats,
-                         avg_performance=round(avg_performance, 2),
+                         avg_performance=avg_performance,
                          top_performers=top_performers,
                          increment_data=increment_data,
                          joining_leaving_data=joining_leaving_data,
                          employee_leaderboard=employee_leaderboard,
                          monthly_trends=monthly_trends,
                          wellness_summary=wellness_summary,
-                         employees=employees,
-                         export_data=export_data)
+                         performance_data=performance_data,
+                         employees=employees)
 
 @app.route('/hr-data-management', methods=['GET', 'POST'])
 def hr_data_management():
     """HR Data Management - Add/Update employee data, increments, promotions"""
     from datetime import datetime
+    from models import HRTransaction, EmployeeHistory
     
     if request.method == 'POST':
         action = request.form.get('action')
         
         if action == 'add_increment':
-            employee_id = request.form.get('employee_id')
-            increment_amount = float(request.form.get('increment_amount'))
-            increment_date = request.form.get('increment_date')
+            employee_id = int(request.form.get('employee_id'))
+            increment_amount = float(request.form.get('increment_amount', 0))
+            increment_percentage = float(request.form.get('increment_percentage', 0))
+            increment_date = datetime.strptime(request.form.get('increment_date'), '%Y-%m-%d').date()
+            reason = request.form.get('reason', '')
+            created_by = request.form.get('created_by', 'HR Admin')
             
             employee = Employee.query.get(employee_id)
             if employee:
+                # Record HR transaction
+                previous_salary = employee.current_salary or 0
+                new_salary = previous_salary + increment_amount
+                
+                transaction = HRTransaction(
+                    employee_id=employee_id,
+                    transaction_type='increment',
+                    amount=increment_amount,
+                    percentage=increment_percentage,
+                    previous_salary=previous_salary,
+                    new_salary=new_salary,
+                    department=employee.department,
+                    reason=reason,
+                    effective_date=increment_date,
+                    created_by=created_by
+                )
+                db.session.add(transaction)
+                
+                # Update employee record
+                employee.current_salary = new_salary
                 employee.last_hike_date = increment_date
+                
+                # Record history
+                history = EmployeeHistory(
+                    employee_id=employee_id,
+                    field_name='salary',
+                    old_value=str(previous_salary),
+                    new_value=str(new_salary),
+                    change_date=increment_date,
+                    changed_by=created_by,
+                    notes=f'Increment: {increment_percentage}% - {reason}'
+                )
+                db.session.add(history)
+                
                 db.session.commit()
-                flash(f'Increment of {increment_amount}% recorded for {employee.name}', 'success')
+                flash(f'Increment of {increment_percentage}% recorded for {employee.name}', 'success')
             else:
                 flash('Employee not found', 'error')
                 
         elif action == 'add_promotion':
-            employee_id = request.form.get('employee_id')
+            employee_id = int(request.form.get('employee_id'))
             new_position = request.form.get('new_position')
-            promotion_date = request.form.get('promotion_date')
+            promotion_date = datetime.strptime(request.form.get('promotion_date'), '%Y-%m-%d').date()
+            created_by = request.form.get('created_by', 'HR Admin')
+            reason = request.form.get('reason', '')
             
             employee = Employee.query.get(employee_id)
             if employee:
+                previous_position = employee.position
+                
+                # Record HR transaction
+                transaction = HRTransaction(
+                    employee_id=employee_id,
+                    transaction_type='promotion',
+                    previous_position=previous_position,
+                    new_position=new_position,
+                    department=employee.department,
+                    reason=reason,
+                    effective_date=promotion_date,
+                    created_by=created_by
+                )
+                db.session.add(transaction)
+                
+                # Update employee record
                 employee.position = new_position
                 employee.last_promotion_date = promotion_date
+                
+                # Record history
+                history = EmployeeHistory(
+                    employee_id=employee_id,
+                    field_name='position',
+                    old_value=previous_position,
+                    new_value=new_position,
+                    change_date=promotion_date,
+                    changed_by=created_by,
+                    notes=f'Promotion - {reason}'
+                )
+                db.session.add(history)
+                
                 db.session.commit()
                 flash(f'Promotion to {new_position} recorded for {employee.name}', 'success')
             else:
                 flash('Employee not found', 'error')
                 
-        elif action == 'update_performance':
-            employee_id = request.form.get('employee_id')
-            performance_score = float(request.form.get('performance_score'))
-            manager_rating = float(request.form.get('manager_rating'))
+        elif action == 'add_exit':
+            employee_id = int(request.form.get('employee_id'))
+            exit_date = datetime.strptime(request.form.get('exit_date'), '%Y-%m-%d').date()
+            reason = request.form.get('reason', '')
+            created_by = request.form.get('created_by', 'HR Admin')
             
             employee = Employee.query.get(employee_id)
             if employee:
-                employee.performance_score = performance_score
-                employee.manager_rating = manager_rating
+                # Record HR transaction
+                transaction = HRTransaction(
+                    employee_id=employee_id,
+                    transaction_type='exit',
+                    department=employee.department,
+                    reason=reason,
+                    effective_date=exit_date,
+                    created_by=created_by
+                )
+                db.session.add(transaction)
+                
+                # Update employee status
+                employee.status = 'terminated'
+                
+                # Record history
+                history = EmployeeHistory(
+                    employee_id=employee_id,
+                    field_name='status',
+                    old_value='active',
+                    new_value='terminated',
+                    change_date=exit_date,
+                    changed_by=created_by,
+                    notes=f'Exit - {reason}'
+                )
+                db.session.add(history)
+                
                 db.session.commit()
-                flash(f'Performance updated for {employee.name}', 'success')
+                flash(f'Exit recorded for {employee.name}', 'success')
             else:
                 flash('Employee not found', 'error')
                 
-        elif action == 'add_employee':
+        elif action == 'add_joining':
             name = request.form.get('name')
             email = request.form.get('email')
             department = request.form.get('department')
             position = request.form.get('position')
-            hire_date = datetime.strptime(request.form.get('hire_date'), '%Y-%m-%d')
+            hire_date = datetime.strptime(request.form.get('hire_date'), '%Y-%m-%d').date()
+            salary = float(request.form.get('salary', 0))
+            created_by = request.form.get('created_by', 'HR Admin')
             
+            # Create new employee
             employee = Employee(
                 name=name,
                 email=email,
                 department=department,
                 position=position,
                 hire_date=hire_date,
-                performance_score=7.0,
-                manager_rating=7.0
+                current_salary=salary,
+                performance_score=0.0,
+                status='active'
             )
             db.session.add(employee)
+            db.session.flush()  # Get the employee ID
+            
+            # Record HR transaction
+            transaction = HRTransaction(
+                employee_id=employee.id,
+                transaction_type='joining',
+                new_salary=salary,
+                new_position=position,
+                department=department,
+                reason=f'New hire - {position}',
+                effective_date=hire_date,
+                created_by=created_by
+            )
+            db.session.add(transaction)
+            
             db.session.commit()
             flash(f'Employee {name} added successfully', 'success')
         
         return redirect(url_for('hr_data_management'))
     
-    # Get all employees and departments for forms
+    # Get all employees and recent transactions
     employees = Employee.query.order_by(Employee.name).all()
+    recent_transactions = HRTransaction.query.order_by(HRTransaction.created_at.desc()).limit(20).all()
     departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Product']
     
     return render_template('hr_data_management.html',
                          employees=employees,
+                         recent_transactions=recent_transactions,
                          departments=departments)
+
+@app.route('/export-company-data')
+def export_company_data():
+    """Export company insights data to Excel"""
+    from utils.real_hr_analytics import RealHRAnalytics
+    from flask import send_file
+    import io
+    
+    analytics = RealHRAnalytics()
+    excel_data = analytics.export_company_data_to_excel()
+    
+    # Create file-like object
+    output = io.BytesIO(excel_data)
+    
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=f'company_hr_insights_{datetime.now().strftime("%Y%m%d")}.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+@app.route('/export-employee-data/<int:employee_id>')
+def export_employee_data(employee_id):
+    """Export individual employee data to Excel"""
+    from utils.real_hr_analytics import RealHRAnalytics
+    from flask import send_file
+    import io
+    
+    analytics = RealHRAnalytics()
+    excel_data = analytics.export_employee_data_to_excel(employee_id)
+    
+    if not excel_data:
+        flash('Employee not found', 'error')
+        return redirect(url_for('hr_insights'))
+    
+    employee = Employee.query.get(employee_id)
+    employee_name = employee.name.replace(' ', '_') if employee else 'employee'
+    
+    # Create file-like object
+    output = io.BytesIO(excel_data)
+    
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=f'{employee_name}_details_{datetime.now().strftime("%Y%m%d")}.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+@app.route('/employee-insights/<int:employee_id>')
+def employee_insights(employee_id):
+    """Individual employee detailed insights"""
+    from utils.real_hr_analytics import RealHRAnalytics
+    
+    analytics = RealHRAnalytics()
+    employee_data = analytics.get_employee_detailed_insights(employee_id)
+    
+    if not employee_data:
+        flash('Employee not found', 'error')
+        return redirect(url_for('hr_insights'))
+    
+    return render_template('employee_insights.html', **employee_data)
 
 @app.route('/api/quiz/<module_name>')
 def get_quiz(module_name):

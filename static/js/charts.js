@@ -496,20 +496,183 @@ function initializeInsightsCharts() {
     // Department distribution
     const deptCtx = document.getElementById('departmentChart');
     if (deptCtx && window.departmentData) {
-        HRCharts.departmentChart(deptCtx.getContext('2d'), window.departmentData);
+        createDepartmentChart(deptCtx.getContext('2d'), window.departmentData);
+    }
+    
+    // Performance distribution
+    const perfCtx = document.getElementById('performanceChart');
+    if (perfCtx && window.performanceData) {
+        createPerformanceChart(perfCtx.getContext('2d'), window.performanceData);
+    }
+    
+    // Monthly trends
+    const trendsCtx = document.getElementById('trendsChart');
+    if (trendsCtx && window.monthlyTrends) {
+        createTrendsChart(trendsCtx.getContext('2d'), window.monthlyTrends);
     }
     
     // Wellness distribution
     const wellnessCtx = document.getElementById('wellnessChart');
     if (wellnessCtx && window.wellnessData) {
-        HRCharts.wellnessChart(wellnessCtx.getContext('2d'), window.wellnessData);
+        createWellnessChart(wellnessCtx.getContext('2d'), window.wellnessData);
     }
+}
+
+/**
+ * Create department distribution pie chart
+ */
+function createDepartmentChart(ctx, data) {
+    const labels = Object.keys(data);
+    const values = Object.values(data);
     
-    // Attrition trends
-    const attritionCtx = document.getElementById('attritionChart');
-    if (attritionCtx && window.attritionData) {
-        HRCharts.attritionChart(attritionCtx.getContext('2d'), window.attritionData);
-    }
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40',
+                    '#FF6384'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Create performance distribution chart
+ */
+function createPerformanceChart(ctx, data) {
+    const distribution = data.distribution || {};
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Excellent', 'Good', 'Average', 'Needs Improvement'],
+            datasets: [{
+                label: 'Number of Employees',
+                data: [
+                    distribution.excellent || 0,
+                    distribution.good || 0,
+                    distribution.average || 0,
+                    distribution.needs_improvement || 0
+                ],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Create monthly trends chart
+ */
+function createTrendsChart(ctx, data) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const incrementData = months.map((_, index) => data.increments ? (data.increments[index + 1] || 0) : 0);
+    const joiningData = months.map((_, index) => data.joinings ? (data.joinings[index + 1] || 0) : 0);
+    const exitData = months.map((_, index) => data.exits ? (data.exits[index + 1] || 0) : 0);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Increments',
+                    data: incrementData,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Joinings',
+                    data: joiningData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Exits',
+                    data: exitData,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+}
+
+/**
+ * Create wellness distribution chart
+ */
+function createWellnessChart(ctx, data) {
+    const distribution = data.distribution || {};
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Good', 'Moderate', 'Concerning'],
+            datasets: [{
+                data: [
+                    distribution.green || 0,
+                    distribution.yellow || 0,
+                    distribution.red || 0
+                ],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
 }
 
 /**

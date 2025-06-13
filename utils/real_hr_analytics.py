@@ -502,5 +502,10 @@ class RealHRAnalytics:
                     })
                 pd.DataFrame(review_data).to_excel(writer, sheet_name='Performance Reviews', index=False)
         
-        output.seek(0)
-        return output.getvalue()
+        # Read the file and return binary data
+        with open(temp_path, 'rb') as f:
+            excel_data = f.read()
+        
+        # Clean up temp file
+        os.unlink(temp_path)
+        return excel_data

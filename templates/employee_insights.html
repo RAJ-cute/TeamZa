@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} - Employee Insights{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-user text-primary"></i> {{ employee.name }} - Employee Insights</h2>
+                    <p class="text-muted">{{ employee.department }} • {{ employee.position }}</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ url_for('export_employee_data', employee_id=employee.id) }}" class="btn btn-success">
+                        <i class="fas fa-download"></i> Export Data
+                    </a>
+                    <a href="{{ url_for('hr_insights') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Insights
+                    </a>
+                </div>
+            </div>
+
+            <!-- Employee Overview Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                            <h6>Days Since Last Increment</h6>
+                            <h3>
+                                {% if insights.days_since_last_increment %}
+                                    {{ insights.days_since_last_increment }}
+                                {% else %}
+                                    <span class="small">Never</span>
+                                {% endif %}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-up fa-2x mb-2"></i>
+                            <h6>Total Increments</h6>
+                            <h3>{{ insights.total_increments }}</h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <h6>Performance Rating</h6>
+                            <h3>{{ "%.1f"|format(insights.current_rating) }}</h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-level-up-alt fa-2x mb-2"></i>
+                            <h6>Total Promotions</h6>
+                            <h3>{{ insights.total_promotions }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Details and Charts -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-id-card"></i> Employee Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ employee.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Department:</strong></td>
+                                    <td>{{ employee.department }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Position:</strong></td>
+                                    <td>{{ employee.position }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hire Date:</strong></td>
+                                    <td>{{ employee.hire_date.strftime('%Y-%m-%d') if employee.hire_date else 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Current Salary:</strong></td>
+                                    <td>
+                                        {% if employee.current_salary %}
+                                            <span class="text-success fw-bold">${{ "{:,.0f}"|format(employee.current_salary) }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Not set</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        {% if employee.status == 'active' %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ employee.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Last Increment:</strong></td>
+                                    <td>
+                                        {% if insights.last_increment.date %}
+                                            {{ insights.last_increment.date.strftime('%Y-%m-%d') }}
+                                            <br><small class="text-success">{{ insights.last_increment.percentage }}% ({{ "${:,.0f}"|format(insights.last_increment.amount) }})</small>
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line"></i> Performance Trend</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if insights.performance_trend == 'improving' %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-arrow-up"></i> Performance is improving over time
+                                </div>
+                            {% elif insights.performance_trend == 'declining' %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-arrow-down"></i> Performance shows declining trend
+                                </div>
+                            {% elif insights.performance_trend == 'stable' %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-minus"></i> Performance is stable
+                                </div>
+                            {% else %}
+                                <div class="alert alert-secondary">
+                                    <i class="fas fa-question"></i> Insufficient data for trend analysis
+                                </div>
+                            {% endif %}
+                            
+                            {% if reviews %}
+                                <canvas id="performanceTrendChart" width="600" height="300"></canvas>
+                            {% else %}
+                                <p class="text-muted text-center">No performance review data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HR Transactions History -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-history"></i> HR Transaction History</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if transactions %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Type</th>
+                                                <th>Details</th>
+                                                <th>Amount</th>
+                                                <th>Previous</th>
+                                                <th>New</th>
+                                                <th>Reason</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for transaction in transactions %}
+                                            <tr>
+                                                <td>{{ transaction.effective_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>
+                                                    {% if transaction.transaction_type == 'increment' %}
+                                                        <span class="badge bg-success">Increment</span>
+                                                    {% elif transaction.transaction_type == 'promotion' %}
+                                                        <span class="badge bg-info">Promotion</span>
+                                                    {% elif transaction.transaction_type == 'joining' %}
+                                                        <span class="badge bg-primary">Joining</span>
+                                                    {% elif transaction.transaction_type == 'exit' %}
+                                                        <span class="badge bg-warning">Exit</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.transaction_type == 'increment' %}
+                                                        {{ transaction.percentage }}% salary increase
+                                                    {% elif transaction.transaction_type == 'promotion' %}
+                                                        Position change
+                                                    {% elif transaction.transaction_type == 'joining' %}
+                                                        Initial hiring
+                                                    {% elif transaction.transaction_type == 'exit' %}
+                                                        Employee departure
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.amount %}
+                                                        ${{ "{:,.0f}"|format(transaction.amount) }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.previous_salary %}
+                                                        ${{ "{:,.0f}"|format(transaction.previous_salary) }}
+                                                    {% elif transaction.previous_position %}
+                                                        {{ transaction.previous_position }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.new_salary %}
+                                                        ${{ "{:,.0f}"|format(transaction.new_salary) }}
+                                                    {% elif transaction.new_position %}
+                                                        {{ transaction.new_position }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ transaction.reason or '-' }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>No HR transactions recorded for this employee</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Reviews -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-clipboard-list"></i> Performance Reviews</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if reviews %}
+                                {% for review in reviews %}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title">{{ review.review_period }}</h6>
+                                            <span class="badge bg-primary">{{ "%.1f"|format(review.overall_rating) }}/5.0</span>
+                                        </div>
+                                        <p class="card-text">{{ review.feedback }}</p>
+                                        <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-clipboard fa-3x mb-3"></i>
+                                    <p>No performance reviews available</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-heart"></i> Wellness Check History</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if wellness %}
+                                {% for check in wellness[:5] %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <small class="text-muted">{{ check.check_date.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                    <div>
+                                        {% if check.overall_wellness == 'green' %}
+                                            <span class="badge bg-success">Good</span>
+                                        {% elif check.overall_wellness == 'yellow' %}
+                                            <span class="badge bg-warning">Moderate</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Concerning</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                {% if wellness|length > 5 %}
+                                <p class="text-muted text-center mt-3">
+                                    <small>Showing last 5 wellness checks</small>
+                                </p>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-heartbeat fa-2x mb-2"></i>
+                                    <p><small>No wellness data available</small></p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Performance trend chart
+{% if reviews %}
+const performanceData = {
+    labels: [{% for review in reviews|reverse %}'{{ review.review_period }}'{% if not loop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+        label: 'Performance Rating',
+        data: [{% for review in reviews|reverse %}{{ review.overall_rating }}{% if not loop.last %},{% endif %}{% endfor %}],
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        tension: 0.4,
+        fill: true
+    }]
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('performanceTrendChart');
+    if (ctx) {
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: performanceData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        title: {
+                            display: true,
+                            text: 'Rating (1-5)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Performance Rating Over Time'
+                    }
+                }
+            }
+        });
+    }
+});
+{% endif %}
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.alert i {
+    margin-right: 8px;
+}
+</style>
+{% endblock %}

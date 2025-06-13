@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}HR Insights & Analytics{% endblock %}
@@ -10,17 +9,17 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-chart-line text-primary"></i> HR Insights & Analytics</h2>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-success" onclick="exportToExcel('company')">
+                    <a href="{{ url_for('export_company_data') }}" class="btn btn-success">
                         <i class="fas fa-download"></i> Export Company Data
-                    </button>
-                    <button type="button" class="btn btn-info" onclick="exportToExcel('individual')">
-                        <i class="fas fa-download"></i> Export Employee Data
-                    </button>
+                    </a>
+                    <a href="{{ url_for('hr_data_management') }}" class="btn btn-primary">
+                        <i class="fas fa-database"></i> HR Data Management
+                    </a>
                 </div>
             </div>
 
             <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs mb-4" id="insightsTabs" role="tablist">
+            <ul class="nav nav-tabs" id="insightsTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="company-tab" data-bs-toggle="tab" data-bs-target="#company-insights" type="button" role="tab">
                         <i class="fas fa-building"></i> Company Insights
@@ -28,13 +27,12 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual-insights" type="button" role="tab">
-                        <i class="fas fa-user"></i> Individual Insights
+                        <i class="fas fa-user"></i> Individual Employee Insights
                     </button>
                 </li>
             </ul>
 
-            <!-- Tab Content -->
-            <div class="tab-content" id="insightsTabContent">
+            <div class="tab-content mt-4" id="insightsTabContent">
                 
                 <!-- Company Insights Tab -->
                 <div class="tab-pane fade show active" id="company-insights" role="tabpanel">
@@ -62,11 +60,12 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h6 class="card-title">Avg Performance</h6>
-                                            <h2 class="mb-0">{{ avg_performance }}/10</h2>
+                                            <h6 class="card-title">Increments This Year</h6>
+                                            <h2 class="mb-0">{{ increment_data.total_increments }}</h2>
+                                            <small>Avg: {{ increment_data.average_percentage }}%</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-chart-line fa-2x"></i>
+                                            <i class="fas fa-arrow-up fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -78,12 +77,12 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h6 class="card-title">Increments Given</h6>
-                                            <h2 class="mb-0">{{ increment_data.total_increments }}</h2>
-                                            <small>Avg: {{ "%.1f"|format(increment_data.avg_increment_percent) }}%</small>
+                                            <h6 class="card-title">New Joinings</h6>
+                                            <h2 class="mb-0">{{ joining_leaving_data.joined_this_year }}</h2>
+                                            <small>Net Growth: {{ joining_leaving_data.net_growth }}</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-arrow-up fa-2x"></i>
+                                            <i class="fas fa-user-plus fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -95,12 +94,12 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h6 class="card-title">Net Growth</h6>
-                                            <h2 class="mb-0">+{{ joining_leaving_data.net_growth }}</h2>
-                                            <small>Joined: {{ joining_leaving_data.joined_this_year }} | Left: {{ joining_leaving_data.left_this_year }}</small>
+                                            <h6 class="card-title">Attrition Rate</h6>
+                                            <h2 class="mb-0">{{ joining_leaving_data.attrition_rate }}%</h2>
+                                            <small>{{ joining_leaving_data.left_this_year }} exits</small>
                                         </div>
                                         <div class="align-self-center">
-                                            <i class="fas fa-trending-up fa-2x"></i>
+                                            <i class="fas fa-user-minus fa-2x"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -110,26 +109,38 @@
 
                     <!-- Charts Row -->
                     <div class="row mb-4">
-                        <!-- Department Distribution -->
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-pie-chart"></i> Department Distribution</h5>
+                                    <h5><i class="fas fa-chart-pie"></i> Department Distribution</h5>
                                 </div>
                                 <div class="card-body">
                                     <canvas id="departmentChart" width="400" height="300"></canvas>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Performance Trends -->
+                        
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-line-chart"></i> Performance Trends</h5>
+                                    <h5><i class="fas fa-chart-bar"></i> Performance Distribution</h5>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="performanceTrendChart" width="400" height="300"></canvas>
+                                    <canvas id="performanceChart" width="400" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trends -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-line"></i> Monthly HR Trends</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="trendsChart" width="800" height="400"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -137,41 +148,39 @@
 
                     <!-- Employee Leaderboard -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-trophy"></i> Employee Leaderboard</h5>
+                                    <h5><i class="fas fa-trophy"></i> Top Performers</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-striped">
+                                        <table class="table table-hover">
                                             <thead>
                                                 <tr>
                                                     <th>Rank</th>
                                                     <th>Employee</th>
                                                     <th>Department</th>
-                                                    <th>Score</th>
+                                                    <th>Position</th>
+                                                    <th>Rating</th>
+                                                    <th>Increments This Year</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for name, score, dept in employee_leaderboard %}
+                                                {% for emp in employee_leaderboard %}
                                                 <tr>
+                                                    <td><span class="badge bg-primary">{{ loop.index }}</span></td>
                                                     <td>
-                                                        {% if loop.index <= 3 %}
-                                                            <span class="badge bg-warning">{{ loop.index }}</span>
-                                                        {% else %}
-                                                            {{ loop.index }}
-                                                        {% endif %}
+                                                        <a href="{{ url_for('employee_insights', employee_id=emp.id) }}" class="text-decoration-none">
+                                                            {{ emp.name }}
+                                                        </a>
                                                     </td>
-                                                    <td>{{ name }}</td>
-                                                    <td>{{ dept }}</td>
+                                                    <td>{{ emp.department }}</td>
+                                                    <td>{{ emp.position }}</td>
                                                     <td>
-                                                        <div class="progress" style="height: 20px;">
-                                                            <div class="progress-bar" style="width: {{ (score/10*100)|round }}%">
-                                                                {{ score }}
-                                                            </div>
-                                                        </div>
+                                                        <span class="badge bg-success">{{ "%.1f"|format(emp.rating) }}</span>
                                                     </td>
+                                                    <td>{{ emp.increments_this_year }}</td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -180,201 +189,146 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Wellness Overview -->
-                        <div class="col-md-6">
+                        
+                        <div class="col-md-4">
                             <div class="card">
                                 <div class="card-header">
                                     <h5><i class="fas fa-heart"></i> Wellness Overview</h5>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="wellnessChart" width="400" height="300"></canvas>
+                                    <canvas id="wellnessChart" width="300" height="300"></canvas>
                                     <div class="mt-3">
-                                        <div class="row text-center">
-                                            <div class="col-4">
-                                                <span class="badge bg-success fs-6">{{ wellness_summary.green }}% Good</span>
-                                            </div>
-                                            <div class="col-4">
-                                                <span class="badge bg-warning fs-6">{{ wellness_summary.yellow }}% Moderate</span>
-                                            </div>
-                                            <div class="col-4">
-                                                <span class="badge bg-danger fs-6">{{ wellness_summary.red }}% Needs Attention</span>
-                                            </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="badge bg-success">Green: {{ wellness_summary.distribution.green }}</span>
+                                            <span class="badge bg-warning">Yellow: {{ wellness_summary.distribution.yellow }}</span>
+                                            <span class="badge bg-danger">Red: {{ wellness_summary.distribution.red }}</span>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Increment Analysis -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5><i class="fas fa-money-bill-wave"></i> Increment Analysis by Department</h5>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="incrementChart" width="400" height="200"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Individual Insights Tab -->
+                <!-- Individual Employee Insights Tab -->
                 <div class="tab-pane fade" id="individual-insights" role="tabpanel">
                     
-                    <!-- Employee Search -->
+                    <!-- Employee Search and Selection -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-search"></i> Employee Search</h5>
+                                    <h5><i class="fas fa-search"></i> Select Employee for Detailed Insights</h5>
                                 </div>
                                 <div class="card-body">
-                                    <select class="form-select" id="employeeSelect" onchange="loadEmployeeDetails()">
-                                        <option value="">Select an employee...</option>
-                                        {% for employee in employees %}
-                                        <option value="{{ employee.id }}">{{ employee.name }} - {{ employee.department }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <select class="form-select" id="employeeSelect" onchange="loadEmployeeInsights()">
+                                                <option value="">Select an employee...</option>
+                                                {% for emp in employees %}
+                                                <option value="{{ emp.id }}">{{ emp.name }} - {{ emp.department }} ({{ emp.position }})</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-primary" onclick="loadEmployeeInsights()">
+                                                <i class="fas fa-search"></i> View Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-download"></i> Export Employee Data</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-success w-100" onclick="exportEmployeeData()" id="exportEmployeeBtn" disabled>
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Employee Details Panel -->
-                    <div id="employeeDetailsPanel" style="display: none;">
-                        <div class="row mb-4">
-                            <!-- Personal Info -->
-                            <div class="col-md-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-user"></i> Personal Information</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="personalInfo">
-                                            <!-- Will be populated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Performance Metrics -->
-                            <div class="col-md-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-chart-bar"></i> Performance Metrics</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="performanceMetrics">
-                                            <!-- Will be populated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Recent Activity -->
-                            <div class="col-md-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-clock"></i> Recent Activity</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="recentActivity">
-                                            <!-- Will be populated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Employee Performance Chart -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-line-chart"></i> Performance History</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <canvas id="employeePerformanceChart" width="400" height="200"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Skills and Development -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-cogs"></i> Skills & Development</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="skillsInfo">
-                                            <!-- Will be populated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Reviews History -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-comments"></i> Reviews History</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="reviewsHistory">
-                                            <!-- Will be populated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Employee Details Container -->
+                    <div id="employeeDetailsContainer" style="display: none;">
+                        <!-- This will be populated by JavaScript -->
                     </div>
 
-                    <!-- All Employees Table -->
+                    <!-- All Employees Quick Overview -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-table"></i> All Employees Overview</h5>
+                                    <h5><i class="fas fa-users"></i> All Employees Overview</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-striped" id="employeesTable">
+                                        <table class="table table-hover" id="employeesTable">
                                             <thead>
                                                 <tr>
-                                                    <th>Name</th>
+                                                    <th>Employee</th>
                                                     <th>Department</th>
                                                     <th>Position</th>
-                                                    <th>Performance</th>
-                                                    <th>Last Increment</th>
                                                     <th>Hire Date</th>
+                                                    <th>Current Salary</th>
+                                                    <th>Last Increment</th>
+                                                    <th>Performance</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for employee in employees %}
+                                                {% for emp in employees %}
                                                 <tr>
-                                                    <td>{{ employee.name }}</td>
-                                                    <td>{{ employee.department }}</td>
-                                                    <td>{{ employee.position }}</td>
                                                     <td>
-                                                        <div class="progress" style="height: 20px;">
-                                                            <div class="progress-bar" style="width: {{ ((employee.performance_score or 7)/10*100)|round }}%">
-                                                                {{ employee.performance_score or 7 }}
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar-circle me-2">{{ emp.name[0] }}</div>
+                                                            <div>
+                                                                <div class="fw-bold">{{ emp.name }}</div>
+                                                                <small class="text-muted">{{ emp.email }}</small>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td>{{ employee.last_hike_date or 'N/A' }}</td>
-                                                    <td>{{ employee.hire_date.strftime('%Y-%m-%d') if employee.hire_date else 'N/A' }}</td>
+                                                    <td>{{ emp.department }}</td>
+                                                    <td>{{ emp.position }}</td>
+                                                    <td>{{ emp.hire_date.strftime('%Y-%m-%d') if emp.hire_date else 'N/A' }}</td>
                                                     <td>
-                                                        <button class="btn btn-sm btn-primary" onclick="selectEmployee('{{ employee.id }}')">
-                                                            <i class="fas fa-eye"></i> View
-                                                        </button>
+                                                        {% if emp.current_salary %}
+                                                            <span class="fw-bold text-success">${{ "{:,.0f}"|format(emp.current_salary) }}</span>
+                                                        {% else %}
+                                                            <span class="text-muted">Not set</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if emp.last_hike_date %}
+                                                            {{ emp.last_hike_date.strftime('%Y-%m-%d') }}
+                                                        {% else %}
+                                                            <span class="text-muted">Never</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% set score = emp.performance_score or 0 %}
+                                                        {% if score >= 8 %}
+                                                            <span class="badge bg-success">{{ "%.1f"|format(score) }}</span>
+                                                        {% elif score >= 6 %}
+                                                            <span class="badge bg-warning">{{ "%.1f"|format(score) }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">{{ "%.1f"|format(score) }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{{ url_for('employee_insights', employee_id=emp.id) }}" class="btn btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ url_for('export_employee_data', employee_id=emp.id) }}" class="btn btn-outline-success">
+                                                                <i class="fas fa-download"></i>
+                                                            </a>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                                 {% endfor %}
@@ -391,230 +345,75 @@
     </div>
 </div>
 
-<!-- Export Data (Hidden) -->
-<div id="exportData" style="display: none;">
-    {{ export_data | tojson }}
-</div>
-
+<!-- Include Chart.js data -->
 <script>
-// Employee data for JavaScript
-const employees = {{ employees | tojson }};
+// Department data for charts
+window.departmentData = {{ dept_stats | tojson }};
+window.performanceData = {{ performance_data | tojson }};
+window.monthlyTrends = {{ monthly_trends | tojson }};
+window.wellnessData = {{ wellness_summary | tojson }};
+
+function loadEmployeeInsights() {
+    const employeeId = document.getElementById('employeeSelect').value;
+    if (employeeId) {
+        window.location.href = `/employee-insights/${employeeId}`;
+    }
+}
+
+function exportEmployeeData() {
+    const employeeId = document.getElementById('employeeSelect').value;
+    if (employeeId) {
+        window.location.href = `/export-employee-data/${employeeId}`;
+    }
+}
+
+// Enable export button when employee is selected
+document.getElementById('employeeSelect').addEventListener('change', function() {
+    const exportBtn = document.getElementById('exportEmployeeBtn');
+    exportBtn.disabled = !this.value;
+});
 
 // Initialize charts when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    initializeCompanyCharts();
+    if (typeof initializeInsightsCharts === 'function') {
+        initializeInsightsCharts();
+    }
 });
-
-function initializeCompanyCharts() {
-    // Department Distribution Chart
-    const deptCtx = document.getElementById('departmentChart').getContext('2d');
-    new Chart(deptCtx, {
-        type: 'doughnut',
-        data: {
-            labels: {{ dept_stats.keys() | list | tojson }},
-            datasets: [{
-                data: {{ dept_stats.values() | list | tojson }},
-                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#17a2b8']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-
-    // Performance Trend Chart
-    const perfCtx = document.getElementById('performanceTrendChart').getContext('2d');
-    new Chart(perfCtx, {
-        type: 'line',
-        data: {
-            labels: {{ monthly_trends.performance | map(attribute='month') | list | tojson }},
-            datasets: [{
-                label: 'Average Performance',
-                data: {{ monthly_trends.performance | map(attribute='avg_score') | list | tojson }},
-                borderColor: '#007bff',
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 10
-                }
-            }
-        }
-    });
-
-    // Wellness Chart
-    const wellnessCtx = document.getElementById('wellnessChart').getContext('2d');
-    new Chart(wellnessCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Good', 'Moderate', 'Needs Attention'],
-            datasets: [{
-                data: [{{ wellness_summary.green }}, {{ wellness_summary.yellow }}, {{ wellness_summary.red }}],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-
-    // Increment Chart
-    const incCtx = document.getElementById('incrementChart').getContext('2d');
-    new Chart(incCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ increment_data.increment_by_dept.keys() | list | tojson }},
-            datasets: [{
-                label: 'Increments Given',
-                data: {{ increment_data.increment_by_dept.values() | list | tojson }},
-                backgroundColor: '#17a2b8'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-}
-
-function loadEmployeeDetails() {
-    const select = document.getElementById('employeeSelect');
-    const employeeId = select.value;
-    
-    if (employeeId) {
-        selectEmployee(employeeId);
-    } else {
-        document.getElementById('employeeDetailsPanel').style.display = 'none';
-    }
-}
-
-function selectEmployee(employeeId) {
-    const employee = employees.find(emp => emp.id == employeeId);
-    if (!employee) return;
-
-    // Show details panel
-    document.getElementById('employeeDetailsPanel').style.display = 'block';
-    
-    // Update employee select
-    document.getElementById('employeeSelect').value = employeeId;
-
-    // Populate personal info
-    document.getElementById('personalInfo').innerHTML = `
-        <p><strong>Name:</strong> ${employee.name}</p>
-        <p><strong>Email:</strong> ${employee.email}</p>
-        <p><strong>Department:</strong> ${employee.department}</p>
-        <p><strong>Position:</strong> ${employee.position}</p>
-        <p><strong>Experience:</strong> ${employee.experience_years || 'N/A'} years</p>
-    `;
-
-    // Populate performance metrics
-    document.getElementById('performanceMetrics').innerHTML = `
-        <p><strong>Performance Score:</strong> ${employee.performance_score || 7}/10</p>
-        <p><strong>Manager Rating:</strong> ${employee.manager_rating || 7}/10</p>
-        <div class="progress mb-2">
-            <div class="progress-bar" style="width: ${((employee.performance_score || 7)/10*100)}%"></div>
-        </div>
-    `;
-
-    // Populate recent activity
-    document.getElementById('recentActivity').innerHTML = `
-        <p><strong>Last Increment:</strong> ${employee.last_hike_date || 'N/A'}</p>
-        <p><strong>Last Promotion:</strong> ${employee.last_promotion_date || 'N/A'}</p>
-        <p><strong>Hire Date:</strong> ${employee.hire_date || 'N/A'}</p>
-    `;
-
-    // Populate skills info
-    const skills = employee.skills ? JSON.parse(employee.skills) : [];
-    document.getElementById('skillsInfo').innerHTML = `
-        <p><strong>Current Skills:</strong></p>
-        <div class="mb-3">
-            ${skills.map(skill => `<span class="badge bg-secondary me-1">${skill}</span>`).join('')}
-        </div>
-        <p><strong>Skill Gaps:</strong> ${employee.skill_gaps || 'None identified'}</p>
-    `;
-
-    // Create employee performance chart
-    createEmployeePerformanceChart(employee);
-
-    // Scroll to details
-    document.getElementById('employeeDetailsPanel').scrollIntoView({ behavior: 'smooth' });
-}
-
-function createEmployeePerformanceChart(employee) {
-    const ctx = document.getElementById('employeePerformanceChart').getContext('2d');
-    
-    // Mock historical performance data
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const baseScore = employee.performance_score || 7;
-    const performanceData = months.map(() => baseScore + (Math.random() - 0.5) * 2);
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: months,
-            datasets: [{
-                label: 'Performance Score',
-                data: performanceData,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 10
-                }
-            }
-        }
-    });
-}
-
-function exportToExcel(type) {
-    const data = JSON.parse(document.getElementById('exportData').textContent);
-    
-    if (type === 'company') {
-        // Export company summary
-        const csvContent = "data:text/csv;charset=utf-8," + 
-            "Metric,Value\n" +
-            "Total Employees," + data.company_summary.total_employees + "\n" +
-            "Average Performance," + data.company_summary.avg_performance + "\n" +
-            "Total Increments," + data.company_summary.increments.total_increments + "\n" +
-            "Average Increment %," + data.company_summary.increments.avg_increment_percent.toFixed(1) + "\n" +
-            "Employees Joined," + data.company_summary.joining_leaving.joined_this_year + "\n" +
-            "Employees Left," + data.company_summary.joining_leaving.left_this_year + "\n";
-        
-        downloadCSV(csvContent, 'company_insights.csv');
-    } else {
-        // Export individual employee data
-        const headers = "Name,Department,Position,Performance Score,Hire Date,Last Increment,Manager Rating,Skill Gaps\n";
-        const rows = data.employee_details.map(emp => 
-            `"${emp.name}","${emp.department}","${emp.position}",${emp.performance_score},"${emp.hire_date}","${emp.last_increment}",${emp.manager_rating},"${emp.skill_gaps}"`
-        ).join('\n');
-        
-        const csvContent = "data:text/csv;charset=utf-8," + headers + rows;
-        downloadCSV(csvContent, 'employee_details.csv');
-    }
-}
-
-function downloadCSV(csvContent, filename) {
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
 </script>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+</style>
 {% endblock %}
