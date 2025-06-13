@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeamZa - Professional HR Management Platform</title>
+    <title><img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" style="height: 16px; width: auto;"> TeamZa - Professional HR Management Platform</title>
     
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -439,7 +439,7 @@
     <nav class="navbar">
         <a href="#" class="logo d-flex align-items-center">
             <img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" style="height: 40px; width: auto; margin-right: 10px;" onerror="this.style.display='none';">
-            TeamZa
+            <img src="{{ url_for('static', filename='images/teamza-logo.png') }}" alt="TeamZa" style="height: 25px; width: auto; margin-left: 5px; vertical-align: middle;"> TeamZa
         </a>
         <ul class="nav-links">
             <li><a href="#features">Features</a></li>
